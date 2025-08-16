@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizer Ślubny PRO+</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Biblioteki do eksportu -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- MODAL DO EDYCJI GOŚCI -->
+    <div id="edit-guest-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Edytuj Dane Gości</h2>
+            <input type="hidden" id="editGuestId">
+            <label>Gość 1 (mężczyzna)</label><input type="text" id="editGuest1Name" placeholder="Imię i nazwisko">
+            <label>Gość 2 (kobieta)</label><input type="text" id="editGuest2Name" placeholder="Imię i nazwisko">
+            <label>Dzieci:</label><div id="edit-children-inputs"></div>
+            <button type="button" onclick="addChildInput('edit')">+ Dodaj dziecko</button>
+            <div class="modal-actions"><button onclick="saveGuestChanges()">Zapisz Zmiany</button><button class="secondary" onclick="closeModal('edit-guest-modal')">Anuluj</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL DO EDYCJI KOSZTÓW -->
+    <div id="edit-vendor-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Edytuj Koszt Usługodawcy</h2>
+            <input type="hidden" id="editVendorId">
+            <label>Nazwa usługi</label><input type="text" id="editVendorName">
+            <label>Całkowity koszt</label><input type="number" id="editVendorCost" min="0" step="0.01">
+            <label>Zapłacona zaliczka</label><input type="number" id="editVendorDeposit" min="0" step="0.01">
+            <label>Data płatności</label><input type="date" id="editVendorPaymentDate">
+            <label class="checkbox-label"><input type="checkbox" id="editVendorPaidFull"> Opłacone w całości</label>
+            <div class="modal-actions"><button onclick="saveVendorChanges()">Zapisz Zmiany</button><button class="secondary" onclick="closeModal('edit-vendor-modal')">Anuluj</button></div>
+        </div>
+    </div>
+    
+    <!-- MODAL POWITALNY / WCZYTYWANIA DANYCH -->
+    <div id="welcome-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Witaj w Organizerze!</h2>
+            <div id="local-data-info"></div>
+            <div class="modal-actions">
+                <button id="load-local-data-btn">Wczytaj znalezione dane</button>
+                <button class="secondary" id="ignore-local-data-btn">Zacznij od nowa</button>
+            </div>
+            <p class="import-prompt">Lub zaimportuj dane z pliku, aby rozpocząć.</p>
+        </div>
+    </div>
+
+    <header>
+        <h1>Mój Organizer Ślubny</h1>
+        <nav id="main-nav">
+            <button class="nav-button active" data-page="dashboard">Pulpit</button>
+            <button class="nav-button" data-page="tasks">Zadania i Kalendarz</button>
+            <button class="nav-button" data-page="guests">Lista Gości</button>
+            <button class="nav-button" data-page="budget">Budżet</button>
+            <button class="nav-button" data-page="seating">Plan Stołów</button>
+            <button class="nav-button" data-page="export">Eksport</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Strona 1: Pulpit -->
+        <div id="dashboard" class="page active">
+            <section class="dashboard-hero">
+                <div class="dashboard-content">
+                    <h2>Nasza Data Ślubu</h2>
+                    <div class="date-setter">
+                        <input type="date" id="weddingDate" title="Ustaw datę ślubu">
+                        <button onclick="saveWeddingDate()">Zapisz Datę</button>
+                    </div>
+                    <div id="countdown-container">
+                        <div id="countdown">Ustaw datę, aby rozpocząć odliczanie.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Strona 2: Zadania -->
+        <div id="tasks" class="page">
+             <section id="tasks-section">
+                <h2>Zarządzanie Zadaniami</h2>
+                <div class="task-input">
+                    <input type="text" id="taskName" placeholder="Nazwa zadania"><input type="date" id="taskDate"><input type="text" id="taskOwner" placeholder="Odpowiedzialny"><button onclick="addTask()">Dodaj zadanie</button>
+                </div>
+                <h3>Lista Zadań (chronologicznie)</h3>
+                <ul id="taskList"></ul>
+                <h3>Widok Kalendarza</h3>
+                <div id="calendar-controls">
+                    <button onclick="previousMonth()">‹ Poprzedni</button>
+                    <h3 id="calendar-month-year"></h3>
+                    <button onclick="nextMonth()">Następny ›</button>
+                </div>
+                <div id="calendar-view"></div>
+            </section>
+        </div>
+
+        <!-- Strona 3: Goście -->
+        <div id="guests" class="page">
+             <section id="guests-section">
+                <h2>Zarządzanie Listą Gości</h2>
+                <div class="guest-form">
+                    <input type="text" id="guest1Name" placeholder="Gość 1 (mężczyzna)"><input type="text" id="guest2Name" placeholder="Gość 2 (kobieta)">
+                    <p>Dodaj dzieci (imię i wiek):</p>
+                    <div id="children-inputs"><div><input type="text" placeholder="Imię dziecka"><input type="number" placeholder="Wiek" min="0"></div></div>
+                    <button type="button" onclick="addChildInput('add')">+ Dodaj kolejne dziecko</button>
+                    <button onclick="addGuest()">Dodaj Gości / Rodzinę</button>
+                </div>
+                <div class="guest-filters">
+                    <span>Filtruj:</span>
+                    <button class="filter-btn active" onclick="filterGuests('all')">Wszyscy</button>
+                    <button class="filter-btn" onclick="filterGuests('confirmed')">Potwierdzeni</button>
+                    <button class="filter-btn" onclick="filterGuests('unconfirmed')">Niepotwierdzeni</button>
+                </div>
+                <table id="guestTable">
+                    <thead><tr><th>Goście</th><th>Potwierdzona obecność</th><th>Nocleg (ile osób)</th><th>Akcje</th></tr></thead>
+                    <tbody></tbody>
+                    <tfoot></tfoot>
+                </table>
+            </section>
+        </div>
+        
+        <!-- Strona 4: Budżet -->
+        <div id="budget" class="page">
+             <section id="budget-section">
+                <h2>Budżet i Koszty</h2>
+                <div class="budget-setup">
+                    <h3>Cennik</h3>
+                    <div class="price-item"><label for="priceAdult">Cena za osobę dorosłą ("talerzyk"):</label><input type="number" id="priceAdult" oninput="updateBudget()"></div>
+                    <div class="price-item"><label for="priceChildOlder">Cena za dziecko 4-12 lat:</label><input type="number" id="priceChildOlder" oninput="updateBudget()"></div>
+                    <div class="price-item"><label for="priceChildYounger">Cena za dziecko 0-3 lat:</label><input type="number" id="priceChildYounger" oninput="updateBudget()"></div>
+                    <div class="price-item"><label for="priceAccommodation">Koszt noclegu za osobę/noc:</label><input type="number" id="priceAccommodation" oninput="updateBudget()"></div>
+                </div>
+                <div class="vendor-costs">
+                    <h3>Koszty Usługodawców</h3>
+                    <div class="vendor-form">
+                        <input type="text" id="vendorName" placeholder="Usługa (np. DJ, Fotograf)"><input type="number" id="vendorCost" placeholder="Całkowity koszt" min="0" step="0.01"><input type="number" id="vendorDeposit" placeholder="Zapłacona zaliczka" min="0" step="0.01"><input type="date" id="vendorPaymentDate" title="Data płatności"><label class="checkbox-label"><input type="checkbox" id="vendorPaidFull"> Opłacone w całości</label><button onclick="addVendor()">Dodaj Koszt</button>
+                    </div>
+                    <ul id="vendorList"></ul>
+                </div>
+                <div class="budget-summary">
+                    <h3>Podsumowanie Kosztów</h3>
+                    <p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span> PLN</p>
+                    <p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span> PLN</p>
+                    <p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span> PLN</p><hr>
+                    <p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span> PLN</strong></p>
+                    <p><strong>Suma wpłat (zaliczki + opłacone): <span id="totalPaid">0.00</span> PLN</strong></p>
+                    <p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span> PLN</strong></p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Strona 5: Plan Stołów -->
+        <div id="seating" class="page">
+            <section id="seating-section">
+                <h2>Graficzny Plan Stołów</h2>
+                <div class="table-controls">
+                    <input type="text" id="tableName" placeholder="Nazwa stołu (np. Stół Wiejski)">
+                    <input type="number" id="tableCapacity" placeholder="Liczba miejsc" min="1">
+                    <select id="tableShape">
+                        <option value="rect">Prostokątny</option>
+                        <option value="round">Okrągły</option>
+                    </select>
+                    <button onclick="addTable()">Dodaj Stół</button>
+                </div>
+                <div class="seating-area">
+                    <div id="unassigned-guests" class="guest-pool" ondragover="allowDrop(event)" ondrop="dropOnPool(event)"></div>
+                    <div id="tables-container"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Strona 6: Eksport -->
+        <div id="export" class="page">
+            <section id="export-section">
+                <h2>Raporty</h2>
+                <p>Wygeneruj raporty z listą gości, budżetem i planem stołów do formatu PDF lub Excel.</p>
+                <div class="export-buttons">
+                    <button onclick="exportToPDF()">Eksportuj do PDF</button>
+                    <button onclick="exportToExcel()">Eksportuj do Excel</button>
+                </div>
+            </section>
+            
+            <section id="data-transfer-section">
+                <h2>Przenoszenie Danych (Import/Eksport)</h2>
+                <p>Zapisz wszystkie dane z organizera do jednego pliku, aby przenieść je na inny komputer, lub wczytaj dane z pliku.</p>
+                <div class="export-buttons">
+                    <button onclick="exportDataToFile()">Eksportuj dane do pliku</button>
+                    <label class="import-label"><input type="file" id="importFileInput" onchange="importDataFromFile(event)" accept=".json"> Importuj dane z pliku</label>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
