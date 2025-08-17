@@ -1,7 +1,4 @@
-from pathlib import Path
-
-# Treść README w języku polskim
-readme_content = """# Organizer Ślubny PRO+
+# Organizer Ślubny PRO+
 
 **Organizer Ślubny PRO+** to aplikacja webowa wspierająca pary młode w planowaniu wesela.  
 Działa całkowicie w przeglądarce (bez konieczności instalacji) i zapisuje dane lokalnie w pamięci przeglądarki.  
@@ -32,3 +29,21 @@ Działa całkowicie w przeglądarce (bez konieczności instalacji) i zapisuje da
 
 ## 📂 Struktura projektu
 
+```
+├── index.html      # Główna strona aplikacji
+├── style.css       # Stylizacja (kolorystyka, układ, animacje)
+├── script.js       # Logika aplikacji (zarządzanie zadaniami, gośćmi, budżetem, planem stołów)
+├── LICENSE         # Licencja projektu
+```
+
+## 🛠️ Wymagania techniczne
+
+- Nowoczesna przeglądarka internetowa z obsługą **JavaScript ES6**.  
+- Brak potrzeby instalacji serwera – działa jako aplikacja statyczna.  
+- Do eksportu raportów wykorzystywane są zewnętrzne biblioteki:
+  - [jsPDF](https://cdnjs.com/libraries/jspdf) + [AutoTable](https://cdnjs.com/libraries/jspdf-autotable)
+  - [SheetJS (xlsx)](https://cdnjs.com/libraries/xlsx)
+
+## 📖 Licencja
+
+Projekt dostępny na licencji określonej w pliku **LICENSE**.  
