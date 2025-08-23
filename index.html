@@ -17,8 +17,8 @@
         <div class="modal-content">
             <h2>Edytuj Dane Gości</h2>
             <input type="hidden" id="editGuestId">
-            <label>Gość 1 (mężczyzna)</label><input type="text" id="editGuest1Name" placeholder="Imię i nazwisko">
-            <label>Gość 2 (kobieta)</label><input type="text" id="editGuest2Name" placeholder="Imię i nazwisko">
+            <label>Gość 1 (np. mężczyzna)</label><input type="text" id="editGuest1Name" placeholder="Imię i nazwisko">
+            <label>Gość 2 (np. kobieta)</label><input type="text" id="editGuest2Name" placeholder="Imię i nazwisko">
             <label>Dzieci:</label><div id="edit-children-inputs"></div>
             <button type="button" onclick="addChildInput('edit')">+ Dodaj dziecko</button>
             <div class="modal-actions"><button onclick="saveGuestChanges()">Zapisz Zmiany</button><button class="secondary" onclick="closeModal('edit-guest-modal')">Anuluj</button></div>
@@ -36,19 +36,6 @@
             <label>Data płatności</label><input type="date" id="editVendorPaymentDate">
             <label class="checkbox-label"><input type="checkbox" id="editVendorPaidFull"> Opłacone w całości</label>
             <div class="modal-actions"><button onclick="saveVendorChanges()">Zapisz Zmiany</button><button class="secondary" onclick="closeModal('edit-vendor-modal')">Anuluj</button></div>
-        </div>
-    </div>
-    
-    <!-- MODAL POWITALNY / WCZYTYWANIA DANYCH -->
-    <div id="welcome-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2>Witaj w Organizerze!</h2>
-            <div id="local-data-info"></div>
-            <div class="modal-actions">
-                <button id="load-local-data-btn">Wczytaj znalezione dane</button>
-                <button class="secondary" id="ignore-local-data-btn">Zacznij od nowa</button>
-            </div>
-            <p class="import-prompt">Lub zaimportuj dane z pliku, aby rozpocząć.</p>
         </div>
     </div>
 
@@ -72,7 +59,7 @@
                     <h2>Nasza Data Ślubu</h2>
                     <div class="date-setter">
                         <input type="date" id="weddingDate" title="Ustaw datę ślubu">
-                        <button onclick="saveWeddingDate()">Zapisz Datę</button>
+                        <button onclick="saveSettings()">Zapisz Datę</button>
                     </div>
                     <div id="countdown-container">
                         <div id="countdown">Ustaw datę, aby rozpocząć odliczanie.</div>
@@ -105,7 +92,7 @@
              <section id="guests-section">
                 <h2>Zarządzanie Listą Gości</h2>
                 <div class="guest-form">
-                    <input type="text" id="guest1Name" placeholder="Gość 1 (mężczyzna)"><input type="text" id="guest2Name" placeholder="Gość 2 (kobieta)">
+                    <input type="text" id="guest1Name" placeholder="Gość 1 (np. mężczyzna)"><input type="text" id="guest2Name" placeholder="Gość 2 (np. kobieta)">
                     <p>Dodaj dzieci (imię i wiek):</p>
                     <div id="children-inputs"><div><input type="text" placeholder="Imię dziecka"><input type="number" placeholder="Wiek" min="0"></div></div>
                     <button type="button" onclick="addChildInput('add')">+ Dodaj kolejne dziecko</button>
@@ -130,7 +117,7 @@
              <section id="budget-section">
                 <h2>Budżet i Koszty</h2>
                 <div class="budget-setup">
-                    <h3>Cennik</h3>
+                    <h3>Cennik <button onclick="saveSettings()" style="font-size: 0.8em; padding: 5px 10px;">Zapisz Cennik</button></h3>
                     <div class="price-item"><label for="priceAdult">Cena za osobę dorosłą ("talerzyk"):</label><input type="number" id="priceAdult" oninput="updateBudget()"></div>
                     <div class="price-item"><label for="priceChildOlder">Cena za dziecko 4-12 lat:</label><input type="number" id="priceChildOlder" oninput="updateBudget()"></div>
                     <div class="price-item"><label for="priceChildYounger">Cena za dziecko 0-3 lat:</label><input type="number" id="priceChildYounger" oninput="updateBudget()"></div>
@@ -183,15 +170,6 @@
                 <div class="export-buttons">
                     <button onclick="exportToPDF()">Eksportuj do PDF</button>
                     <button onclick="exportToExcel()">Eksportuj do Excel</button>
-                </div>
-            </section>
-            
-            <section id="data-transfer-section">
-                <h2>Przenoszenie Danych (Import/Eksport)</h2>
-                <p>Zapisz wszystkie dane z organizera do jednego pliku, aby przenieść je na inny komputer, lub wczytaj dane z pliku.</p>
-                <div class="export-buttons">
-                    <button onclick="exportDataToFile()">Eksportuj dane do pliku</button>
-                    <label class="import-label"><input type="file" id="importFileInput" onchange="importDataFromFile(event)" accept=".json"> Importuj dane z pliku</label>
                 </div>
             </section>
         </div>
