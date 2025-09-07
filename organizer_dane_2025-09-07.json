@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "version": "2.0-db",
+    "savedAt": "2025-09-07T12:21:21.034Z"
+  },
+  "data": {
+    "tasks": [
+      {
+        "id": "3",
+        "name": "Zapłać dla: DJ",
+        "date": "2025-09-11",
+        "owner": "Para Młoda",
+        "completed": "0",
+        "completion_date": null,
+        "is_payment_task": "1",
+        "vendor_id": "5"
+      },
+      {
+        "id": "1",
+        "name": "Ksiądz",
+        "date": "2026-02-07",
+        "owner": "Młodzi",
+        "completed": "0",
+        "completion_date": null,
+        "is_payment_task": "0",
+        "vendor_id": null
+      }
+    ],
+    "guests": [
+      {
+        "id": "1",
+        "guest1_name": "Młodyąęóśżźćń",
+        "guest2_name": "Młoda",
+        "confirmed": "1",
+        "accommodation": "2",
+        "children": []
+      }
+    ],
+    "vendors": [
+      {
+        "id": "5",
+        "name": "DJ",
+        "cost": "10000.00",
+        "deposit": "100.00",
+        "paid_full": "0",
+        "payment_date": "2025-09-11"
+      }
+    ],
+    "tables": [
+      {
+        "id": "5",
+        "name": "Młoda para",
+        "capacity": "12",
+        "shape": "rect",
+        "seats": [
+          {
+            "id": "31",
+            "table_id": "5",
+            "seat_index": "0",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "32",
+            "table_id": "5",
+            "seat_index": "1",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "33",
+            "table_id": "5",
+            "seat_index": "2",
+            "person_type": "guest1",
+            "person_id": "1",
+            "person_name": "Młodyąęóśżźćń"
+          },
+          {
+            "id": "34",
+            "table_id": "5",
+            "seat_index": "3",
+            "person_type": "guest2",
+            "person_id": "1",
+            "person_name": "Młoda"
+          },
+          {
+            "id": "35",
+            "table_id": "5",
+            "seat_index": "4",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "36",
+            "table_id": "5",
+            "seat_index": "5",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "37",
+            "table_id": "5",
+            "seat_index": "6",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "38",
+            "table_id": "5",
+            "seat_index": "7",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "39",
+            "table_id": "5",
+            "seat_index": "8",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "40",
+            "table_id": "5",
+            "seat_index": "9",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "41",
+            "table_id": "5",
+            "seat_index": "10",
+            "person_type": null,
+            "person_id": null
+          },
+          {
+            "id": "42",
+            "table_id": "5",
+            "seat_index": "11",
+            "person_type": null,
+            "person_id": null
+          }
+        ]
+      }
+    ],
+    "settings": {
+      "wedding_date": "2027-06-05",
+      "price_adult": "280",
+      "price_child_older": "0",
+      "price_child_younger": "0",
+      "price_accommodation": "200"
+    }
+  }
+}
