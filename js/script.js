@@ -1,7 +1,7 @@
 // js/script.js (wersja AJAX)
 
 // --- GLOBALNE ZMIENNE STANU (CACHE) ---
-let tasks = [], guests = [], vendors = [], tables = [];
+let tasks = [], guests = [], vendors = [], tables = [], priceItems = [];
 let currentDate = new Date();
 let guestFilterState = 'all';
 let countdownInterval;
@@ -52,11 +52,15 @@ async function handleFormSubmit(event) {
         }
 
         // Sukces! Wyczyść formularz (jeśli to formularz dodawania) i odśwież widok.
-        if (form.classList.contains('task-input') || form.classList.contains('guest-form') || form.classList.contains('vendor-form') || form.classList.contains('table-controls')) {
+        if (form.classList.contains('task-input') || form.classList.contains('guest-form') || form.classList.contains('vendor-form') || form.classList.contains('table-controls') || form.classList.contains('price-item-form')) {
             form.reset();
              // Specjalnie dla dynamicznie dodawanych dzieci
             if (form.classList.contains('guest-form')) {
                 document.getElementById('children-inputs').innerHTML = `<div><input type="text" placeholder="Imię dziecka" name="addChildName[]"><input type="number" placeholder="Wiek" min="0" name="addChildAge[]"></div>`;
+            }
+            if (form.classList.contains('price-item-form')) {
+                const scopeSelect = form.querySelector('select[name="priceItemScope"]');
+                if (scopeSelect) scopeSelect.value = 'all';
             }
         }
         
@@ -96,8 +100,8 @@ async function fetchData(dataType) {
  * Główna funkcja do pobierania wszystkich danych z serwera i odświeżania całego interfejsu.
  */
 async function renderAll() {
-    const [settingsData, tasksData, guestsData, vendorsData, tablesData] = await Promise.all([
-        fetchData('settings'), fetchData('tasks'), fetchData('guests'), fetchData('vendors'), fetchData('tables')
+    const [settingsData, tasksData, guestsData, vendorsData, tablesData, priceItemsData] = await Promise.all([
+        fetchData('settings'), fetchData('tasks'), fetchData('guests'), fetchData('vendors'), fetchData('tables'), fetchData('price_items')
     ]);
 
     if (settingsData) {
@@ -112,6 +116,8 @@ async function renderAll() {
     tasks = tasksData; renderTasks(); renderCalendar();
     guests = guestsData; renderGuests();
     vendors = vendorsData; renderVendors();
+    priceItems = Array.isArray(priceItemsData) ? priceItemsData : [];
+    renderPriceItems();
     tables = tablesData; renderTables(); renderUnassignedGuests();
     updateBudget();
 }
@@ -326,27 +332,160 @@ function confirmRemoveVendor(vendorId) {
     });
 }
 
+function renderPriceItems() {
+    const list = document.getElementById('priceItemsList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!priceItems || priceItems.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'empty';
+        li.textContent = 'Brak dodatkowych pozycji.';
+        list.appendChild(li);
+        return;
+    }
+
+    const scopeLabels = {
+        all: 'wszyscy goście',
+        adults: 'tylko dorośli'
+    };
+
+    priceItems.forEach(item => {
+        const li = document.createElement('li');
+        li.dataset.itemId = item.id;
+
+        const details = document.createElement('div');
+        details.className = 'price-item-details';
+        const amount = parseFloat(item.amount) || 0;
+        details.innerHTML = `<strong>${item.label}</strong> - ${amount.toFixed(2)} PLN (${scopeLabels[item.scope] || item.scope})`;
+
+        const actions = document.createElement('div');
+        actions.className = 'price-item-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.textContent = 'Edytuj';
+        editBtn.onclick = () => openPriceItemEdit(item.id);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'secondary';
+        deleteBtn.textContent = 'Usuń';
+        deleteBtn.onclick = () => confirmRemovePriceItem(item.id, item.label);
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        li.appendChild(details);
+        li.appendChild(actions);
+        list.appendChild(li);
+    });
+}
+
+function openPriceItemEdit(itemId) {
+    const item = priceItems.find(pi => parseInt(pi.id, 10) === parseInt(itemId, 10));
+    if (!item) return;
+
+    const newLabel = prompt('Podaj nową nazwę pozycji:', item.label);
+    if (newLabel === null) return;
+
+    const currentAmount = Number.parseFloat(item.amount);
+    const formattedAmount = Number.isNaN(currentAmount) ? '0.00' : currentAmount.toFixed(2);
+    const newAmountInput = prompt('Podaj nową kwotę:', formattedAmount);
+    if (newAmountInput === null) return;
+
+    const newScopeInput = prompt('Zakres (all - wszyscy, adults - dorośli):', item.scope);
+    if (newScopeInput === null) return;
+    const newScope = newScopeInput.trim().toLowerCase();
+    if (!['all', 'adults'].includes(newScope)) {
+        alert('Zakres musi być równy "all" lub "adults".');
+        return;
+    }
+
+    submitPriceItemUpdate(itemId, newLabel, newAmountInput, newScope);
+}
+
+async function submitPriceItemUpdate(itemId, label, amount, scope) {
+    const formData = new FormData();
+    formData.append('action', 'update_price_item');
+    formData.append('priceItemId', itemId);
+    formData.append('priceItemName', label);
+    formData.append('priceItemAmount', amount);
+    formData.append('priceItemScope', scope);
+
+    try {
+        const response = await fetch('index.php', { method: 'POST', body: formData });
+        if (!response.ok) throw new Error(`Błąd sieci: ${response.statusText}`);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || 'Błąd podczas aktualizacji pozycji.');
+        await renderAll();
+    } catch (error) {
+        console.error('Błąd aktualizacji pozycji cenowej:', error);
+        alert(`Nie udało się zaktualizować pozycji: ${error.message}`);
+    }
+}
+
+function confirmRemovePriceItem(itemId, label) {
+    confirmAction(`Usunąć pozycję: ${label}?`, async () => {
+        const formData = new FormData();
+        formData.append('action', 'delete_price_item');
+        formData.append('priceItemId', itemId);
+        const response = await fetch('index.php', { method: 'POST', body: formData });
+        const result = await response.json();
+        if (result.success) await renderAll();
+        else alert(result.message);
+    });
+}
+
 function updateBudget() {
     const pA = parseFloat(document.getElementById("priceAdult").value) || 0;
     const pCO = parseFloat(document.getElementById("priceChildOlder").value) || 0;
     const pCY = parseFloat(document.getElementById("priceChildYounger").value) || 0;
     const pAcc = parseFloat(document.getElementById("priceAccommodation").value) || 0;
     let mealCost = 0, accommCost = 0;
+    let confirmedGuestCount = 0, confirmedAdultCount = 0;
 
-    guests.filter(g => parseInt(g.confirmed) === 1).forEach(g => {
-        if (g.guest1_name) mealCost += pA;
-        if (g.guest2_name) mealCost += pA;
-        if (g.children) g.children.forEach(c => mealCost += parseInt(c.age) <= 3 ? pCY : parseInt(c.age) <= 12 ? pCO : pA);
+    guests.filter(g => parseInt(g.confirmed, 10) === 1).forEach(g => {
+        if (g.guest1_name) {
+            mealCost += pA;
+            confirmedGuestCount++;
+            confirmedAdultCount++;
+        }
+        if (g.guest2_name) {
+            mealCost += pA;
+            confirmedGuestCount++;
+            confirmedAdultCount++;
+        }
+        if (g.children) {
+            g.children.forEach(c => {
+                const age = parseInt(c.age, 10) || 0;
+                mealCost += age <= 3 ? pCY : age <= 12 ? pCO : pA;
+                confirmedGuestCount++;
+                if (age >= 18) confirmedAdultCount++;
+            });
+        }
         accommCost += (parseInt(g.accommodation) || 0) * pAcc;
     });
 
+    let additionalCostTotal = priceItems.reduce((sum, item) => {
+        const amount = parseFloat(item.amount) || 0;
+        if (item.scope === 'adults') {
+            return sum + amount * confirmedAdultCount;
+        }
+        return sum + amount * confirmedGuestCount;
+    }, 0);
+
     let vendorTotal = vendors.reduce((sum, v) => sum + (parseFloat(v.cost) || 0), 0);
     let totalPaid = vendors.reduce((sum, v) => sum + (parseInt(v.paid_full) === 1 ? parseFloat(v.cost) : parseFloat(v.deposit) || 0), 0);
-    
+
     document.getElementById("guestMealCost").textContent = mealCost.toFixed(2);
     document.getElementById("guestAccommCost").textContent = accommCost.toFixed(2);
     document.getElementById("vendorTotalCost").textContent = vendorTotal.toFixed(2);
-    const totalCost = mealCost + accommCost + vendorTotal;
+    const additionalElement = document.getElementById('additionalPerGuestCost');
+    if (additionalElement) {
+        additionalElement.textContent = additionalCostTotal.toFixed(2);
+    }
+    const totalCost = mealCost + accommCost + vendorTotal + additionalCostTotal;
     document.getElementById("totalWeddingCost").textContent = totalCost.toFixed(2);
     document.getElementById("totalPaid").textContent = totalPaid.toFixed(2);
     document.getElementById("totalRemaining").textContent = (totalCost - totalPaid).toFixed(2);

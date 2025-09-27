@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $paid_full = isset($_POST['vendorPaidFull']) ? 1 : 0;
                 $payment_date = $_POST['vendorPaymentDate'] ?? null;
                 $vendor_name = $_POST['vendorName'];
-                
+
                 // Funkcja add_vendor zwraca teraz ID nowego dostawcy lub false
                 $new_vendor_id = add_vendor($vendor_name, (float)$_POST['vendorCost'], (float)$_POST['vendorDeposit'], $paid_full, $payment_date);
 
@@ -101,6 +101,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $response = ['success' => false, 'message' => 'Nie udało się dodać kosztu.'];
                 }
+                break;
+            case 'add_price_item':
+                add_price_item(
+                    $_POST['priceItemName'] ?? '',
+                    $_POST['priceItemAmount'] ?? '0',
+                    $_POST['priceItemScope'] ?? 'all'
+                );
+                $response = ['success' => true, 'message' => 'Pozycja cenowa dodana.'];
+                break;
+            case 'update_price_item':
+                update_price_item(
+                    (int)($_POST['priceItemId'] ?? 0),
+                    $_POST['priceItemName'] ?? '',
+                    $_POST['priceItemAmount'] ?? '0',
+                    $_POST['priceItemScope'] ?? 'all'
+                );
+                $response = ['success' => true, 'message' => 'Pozycja cenowa zaktualizowana.'];
+                break;
+            case 'delete_price_item':
+                delete_price_item((int)($_POST['priceItemId'] ?? 0));
+                $response = ['success' => true, 'message' => 'Pozycja cenowa usunięta.'];
                 break;
 
             case 'edit_vendor':
@@ -368,11 +389,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </form>
                     <ul id="vendorList"></ul>
                 </div>
+                <div class="additional-price-items">
+                    <h3>Dodatkowe pozycje cenowe</h3>
+                    <form class="price-item-form ajax-form">
+                        <input type="hidden" name="action" value="add_price_item">
+                        <input type="text" id="priceItemName" name="priceItemName" placeholder="Nazwa pozycji" required>
+                        <input type="number" id="priceItemAmount" name="priceItemAmount" placeholder="Kwota" min="0" step="0.01" required>
+                        <select id="priceItemScope" name="priceItemScope">
+                            <option value="all">Wszyscy goście</option>
+                            <option value="adults">Tylko dorośli</option>
+                        </select>
+                        <button type="submit">Dodaj pozycję</button>
+                    </form>
+                    <ul id="priceItemsList"></ul>
+                </div>
                 <div class="budget-summary">
                     <h3>Podsumowanie Kosztów</h3>
                     <p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span> PLN</p>
                     <p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span> PLN</p>
                     <p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span> PLN</p><hr>
+                    <p>Dodatkowe koszty na osoby: <span id="additionalPerGuestCost">0.00</span> PLN</p>
                     <p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span> PLN</strong></p>
                     <p><strong>Suma wpłat (zaliczki + opłacone): <span id="totalPaid">0.00</span> PLN</strong></p>
                     <p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span> PLN</strong></p>
