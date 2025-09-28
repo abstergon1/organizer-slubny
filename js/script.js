@@ -352,12 +352,22 @@ function renderPriceItems() {
 
     priceItems.forEach(item => {
         const li = document.createElement('li');
+        li.className = 'price-item-row';
         li.dataset.itemId = item.id;
 
         const details = document.createElement('div');
         details.className = 'price-item-details';
+
+        const nameEl = document.createElement('strong');
+        nameEl.textContent = item.label;
+
+        const metaEl = document.createElement('span');
+        metaEl.className = 'price-item-meta';
         const amount = parseFloat(item.amount) || 0;
-        details.innerHTML = `<strong>${item.label}</strong> - ${amount.toFixed(2)} PLN (${scopeLabels[item.scope] || item.scope})`;
+        metaEl.textContent = `${amount.toFixed(2)} PLN · ${scopeLabels[item.scope] || item.scope}`;
+
+        details.appendChild(nameEl);
+        details.appendChild(metaEl);
 
         const actions = document.createElement('div');
         actions.className = 'price-item-actions';

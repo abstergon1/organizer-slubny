@@ -77,6 +77,12 @@ button.secondary:hover { background-color: #888; }
 #vendorList li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; gap: 10px; }
 .vendor-details { display: flex; flex-direction: column; }
 .vendor-details .date-info { font-size: 0.8em; color: #666; }
+#priceItemsList { list-style: none; margin-top: 20px; padding: 0; }
+#priceItemsList li.empty { font-style: italic; color: #666; }
+.price-item-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; }
+.price-item-details { display: flex; flex-direction: column; gap: 4px; }
+.price-item-meta { font-size: 0.9em; color: #666; }
+.price-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .budget-summary p { font-size: 1.1em; margin: 5px 0; }
 .budget-summary strong { color: var(--primary-color); }
 

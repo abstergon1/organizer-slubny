@@ -11,6 +11,8 @@ if ($settings_from_db) {
     }
 }
 
+$price_items_from_db = get_price_items();
+
 // --- Obsługa żądań POST (teraz wszystkie zwracają JSON) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
@@ -401,7 +403,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                         <button type="submit">Dodaj pozycję</button>
                     </form>
-                    <ul id="priceItemsList"></ul>
+                    <ul id="priceItemsList">
+                        <?php if (!empty($price_items_from_db)): ?>
+                            <?php foreach ($price_items_from_db as $price_item): ?>
+                                <?php
+                                    $item_id = (int)($price_item['id'] ?? 0);
+                                    $item_label = $price_item['label'] ?? '';
+                                    $item_amount = isset($price_item['amount']) ? (float)$price_item['amount'] : 0.0;
+                                    $item_scope = $price_item['scope'] ?? 'all';
+                                    $scope_label = $item_scope === 'adults' ? 'tylko dorośli' : 'wszyscy goście';
+                                ?>
+                                <li class="price-item-row" data-item-id="<?php echo $item_id; ?>">
+                                    <div class="price-item-details">
+                                        <strong><?php echo htmlspecialchars($item_label, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <span class="price-item-meta">
+                                            <?php echo number_format($item_amount, 2, ',', ' '); ?> PLN · <?php echo htmlspecialchars($scope_label, ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    </div>
+                                    <div class="price-item-actions">
+                                        <button type="button" onclick="openPriceItemEdit(<?php echo $item_id; ?>)">Edytuj</button>
+                                        <button type="button" class="secondary" onclick="confirmRemovePriceItem(<?php echo $item_id; ?>, <?php echo json_encode($item_label, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)">Usuń</button>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li class="empty">Brak dodatkowych pozycji.</li>
+                        <?php endif; ?>
+                    </ul>
                 </div>
                 <div class="budget-summary">
                     <h3>Podsumowanie Kosztów</h3>
