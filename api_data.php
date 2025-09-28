@@ -18,6 +18,9 @@ switch ($dataType) {
     case 'vendors':
         $data = get_vendors();
         break;
+    case 'price_items':
+        $data = get_price_items();
+        break;
     case 'tables':
         $data = get_tables();
         // Dodatkowa logika do uzupełnienia nazw gości w miejscach

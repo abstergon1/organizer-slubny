@@ -11,6 +11,8 @@ if ($settings_from_db) {
     }
 }
 
+$price_items_from_db = get_price_items();
+
 // --- Obsługa żądań POST (teraz wszystkie zwracają JSON) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
@@ -82,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $paid_full = isset($_POST['vendorPaidFull']) ? 1 : 0;
                 $payment_date = $_POST['vendorPaymentDate'] ?? null;
                 $vendor_name = $_POST['vendorName'];
-                
+
                 // Funkcja add_vendor zwraca teraz ID nowego dostawcy lub false
                 $new_vendor_id = add_vendor($vendor_name, (float)$_POST['vendorCost'], (float)$_POST['vendorDeposit'], $paid_full, $payment_date);
 
@@ -101,6 +103,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $response = ['success' => false, 'message' => 'Nie udało się dodać kosztu.'];
                 }
+                break;
+            case 'add_price_item':
+                add_price_item(
+                    $_POST['priceItemName'] ?? '',
+                    $_POST['priceItemAmount'] ?? '0',
+                    $_POST['priceItemScope'] ?? 'all'
+                );
+                $response = ['success' => true, 'message' => 'Pozycja cenowa dodana.'];
+                break;
+            case 'update_price_item':
+                update_price_item(
+                    (int)($_POST['priceItemId'] ?? 0),
+                    $_POST['priceItemName'] ?? '',
+                    $_POST['priceItemAmount'] ?? '0',
+                    $_POST['priceItemScope'] ?? 'all'
+                );
+                $response = ['success' => true, 'message' => 'Pozycja cenowa zaktualizowana.'];
+                break;
+            case 'delete_price_item':
+                delete_price_item((int)($_POST['priceItemId'] ?? 0));
+                $response = ['success' => true, 'message' => 'Pozycja cenowa usunięta.'];
                 break;
 
             case 'edit_vendor':
@@ -368,11 +391,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </form>
                     <ul id="vendorList"></ul>
                 </div>
+                <div class="additional-price-items">
+                    <h3>Dodatkowe pozycje cenowe</h3>
+                    <form class="price-item-form ajax-form">
+                        <input type="hidden" name="action" value="add_price_item">
+                        <input type="text" id="priceItemName" name="priceItemName" placeholder="Nazwa pozycji" required>
+                        <input type="number" id="priceItemAmount" name="priceItemAmount" placeholder="Kwota" min="0" step="0.01" required>
+                        <select id="priceItemScope" name="priceItemScope">
+                            <option value="all">Wszyscy goście</option>
+                            <option value="adults">Tylko dorośli</option>
+                        </select>
+                        <button type="submit">Dodaj pozycję</button>
+                    </form>
+                    <ul id="priceItemsList">
+                        <?php if (!empty($price_items_from_db)): ?>
+                            <?php foreach ($price_items_from_db as $price_item): ?>
+                                <?php
+                                    $item_id = (int)($price_item['id'] ?? 0);
+                                    $item_label = $price_item['label'] ?? '';
+                                    $item_amount = isset($price_item['amount']) ? (float)$price_item['amount'] : 0.0;
+                                    $item_scope = $price_item['scope'] ?? 'all';
+                                    $scope_label = $item_scope === 'adults' ? 'tylko dorośli' : 'wszyscy goście';
+                                ?>
+                                <li class="price-item-row" data-item-id="<?php echo $item_id; ?>">
+                                    <div class="price-item-details">
+                                        <strong><?php echo htmlspecialchars($item_label, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <span class="price-item-meta">
+                                            <?php echo number_format($item_amount, 2, ',', ' '); ?> PLN · <?php echo htmlspecialchars($scope_label, ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    </div>
+                                    <div class="price-item-actions">
+                                        <button type="button" onclick="openPriceItemEdit(<?php echo $item_id; ?>)">Edytuj</button>
+                                        <button type="button" class="secondary" onclick="confirmRemovePriceItem(<?php echo $item_id; ?>, <?php echo json_encode($item_label, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)">Usuń</button>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <li class="empty">Brak dodatkowych pozycji.</li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
                 <div class="budget-summary">
                     <h3>Podsumowanie Kosztów</h3>
                     <p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span> PLN</p>
                     <p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span> PLN</p>
                     <p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span> PLN</p><hr>
+                    <p>Dodatkowe koszty na osoby: <span id="additionalPerGuestCost">0.00</span> PLN</p>
                     <p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span> PLN</strong></p>
                     <p><strong>Suma wpłat (zaliczki + opłacone): <span id="totalPaid">0.00</span> PLN</strong></p>
                     <p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span> PLN</strong></p>

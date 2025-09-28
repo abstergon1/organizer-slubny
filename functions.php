@@ -22,6 +22,25 @@ function update_setting($key, $value) {
     return $stmt->execute();
 }
 
+function normalize_decimal_value($value) {
+    $normalized = str_replace(',', '.', trim((string)$value));
+    if ($normalized === '') {
+        throw new InvalidArgumentException('Nieprawidłowa kwota.');
+    }
+    if (!is_numeric($normalized)) {
+        throw new InvalidArgumentException('Nieprawidłowa kwota.');
+    }
+    return number_format((float)$normalized, 2, '.', '');
+}
+
+function normalize_price_item_scope($scope) {
+    $normalized = strtolower(trim($scope));
+    if (!in_array($normalized, ['all', 'adults'], true)) {
+        throw new InvalidArgumentException('Nieprawidłowy zakres pozycji cenowej.');
+    }
+    return $normalized;
+}
+
 // --- Funkcje dla zadań ---
 function get_tasks() {
     global $conn;
@@ -191,6 +210,62 @@ function delete_vendor($id) {
     $stmt_vendor = $conn->prepare("DELETE FROM vendors WHERE id = ?");
     $stmt_vendor->bind_param("i", $id);
     return $stmt_vendor->execute();
+}
+
+// --- Funkcje dla dodatkowych pozycji cenowych ---
+function get_price_items() {
+    global $conn;
+    $result = $conn->query("SELECT id, label, amount, scope FROM price_items ORDER BY id ASC");
+    $items = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $items[] = $row;
+        }
+    }
+    return $items;
+}
+
+function add_price_item($label, $amount, $scope) {
+    global $conn;
+    $label = trim($label);
+    if ($label === '') {
+        throw new InvalidArgumentException('Nazwa pozycji jest wymagana.');
+    }
+    $normalizedAmount = normalize_decimal_value($amount);
+    $normalizedScope = normalize_price_item_scope($scope);
+
+    $stmt = $conn->prepare("INSERT INTO price_items (label, amount, scope) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $label, $normalizedAmount, $normalizedScope);
+    return $stmt->execute();
+}
+
+function update_price_item($id, $label, $amount, $scope) {
+    global $conn;
+    $id = (int)$id;
+    if ($id <= 0) {
+        throw new InvalidArgumentException('Nieprawidłowy identyfikator pozycji.');
+    }
+    $label = trim($label);
+    if ($label === '') {
+        throw new InvalidArgumentException('Nazwa pozycji jest wymagana.');
+    }
+    $normalizedAmount = normalize_decimal_value($amount);
+    $normalizedScope = normalize_price_item_scope($scope);
+
+    $stmt = $conn->prepare("UPDATE price_items SET label = ?, amount = ?, scope = ? WHERE id = ?");
+    $stmt->bind_param("sssi", $label, $normalizedAmount, $normalizedScope, $id);
+    return $stmt->execute();
+}
+
+function delete_price_item($id) {
+    global $conn;
+    $id = (int)$id;
+    if ($id <= 0) {
+        throw new InvalidArgumentException('Nieprawidłowy identyfikator pozycji.');
+    }
+    $stmt = $conn->prepare("DELETE FROM price_items WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    return $stmt->execute();
 }
 
 // --- Funkcje dla stołów i miejsc (szkielet) ---
