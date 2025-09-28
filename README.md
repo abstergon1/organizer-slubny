@@ -1,94 +1,84 @@
-# Organizer Ślubny PRO+
+# Wedding Organizer PRO+
 
-**Organizer Ślubny PRO+** to kompleksowa aplikacja internetowa zaprojektowana, aby pomóc przyszłym parom młodym w zarządzaniu wszystkimi aspektami organizacji ślubu i wesela. Aplikacja została zbudowana w architekturze Klient-Serwer, wykorzystując PHP do logiki backendowej oraz bazę danych MySQL do przechowywania danych, co zapewnia stabilność, bezpieczeństwo i możliwość przyszłej rozbudowy.
+**W pełni funkcjonalna aplikacja webowa PHP (Vanilla PHP + AJAX/JS/MySQL) do zarządzania weselem, gośćmi, budżetem i planem stołów.**
 
-![Wedding Organizer Screenshot](https://i.imgur.com/your-screenshot-url.png)
-*(Sugestia: Zrób zrzut ekranu swojej aplikacji i umieść go tutaj, aby README było bardziej atrakcyjne. Powyższy link jest tylko przykładem.)*
+Ta wersja jest wynikiem rozbudowy podstawowego projektu, wzbogaconego o zaawansowane funkcje RSVP, dynamiczne obliczenia budżetowe i ulepszoną wizualizację planu stołów.
 
----
+## 🌟 Kluczowe Funkcjonalności
 
-## ✨ Główne Funkcjonalności
+Aplikacja oferuje kompleksowy zestaw narzędzi do zarządzania weselem:
 
-Aplikacja podzielona jest na sześć intuicyjnych modułów, które pokrywają wszystkie kluczowe etapy planowania:
+### 🤵 Lista Gości i Zaawansowany System RSVP
+*   **Samodzielne Potwierdzenie Obecności (RSVP):** Automatyczne generowanie unikalnego linku i kodu QR na zaproszenie dla każdej grupy gości (np. `yourdomain.com/rsvp.php?token=...`).
+*   **Dynamiczna Strona RSVP:** Goście widzą informacje o swoim statusie, usadzeniu przy stole oraz mogą edytować liczbę osób na nocleg i poprawiny, a także zostawić uwagi/diety.
+*   **Centralny CMS dla Gości:** Możliwość zarządzania informacjami o harmonogramie, menu, mapach Google (kościoła i sali) i kontaktach z poziomu aplikacji (Sekcja "Info dla Gości").
+*   **Statusy RSVP:** Obsługa statusów: `Oczekuje na odpowiedź`, `Oczekuje na akceptację Panny/Pana Młodego`, `Zatwierdzony` oraz `Rezygnacja`.
+*   **Edytowalna Lista Finalna:** Administrator może ręcznie edytować finalną liczbę potwierdzonych Dorosłych i Dzieci.
 
-### 1. **Pulpit (Dashboard)**
-- **Odliczanie do ślubu:** Dynamiczny licznik pokazujący dni, godziny, minuty i sekundy do ustawionej daty ślubu.
-- **Centralne miejsce:** Służy jako strona główna i punkt startowy dla użytkownika.
+### 💰 Budżet i Finanse
+*   **Elastyczny System Płatności:** Możliwość rejestrowania **wielu częściowych wpłat** dla każdego dostawcy (zastępuje prosty system Zaliczka/Całość).
+*   **Dynamiczne Obliczanie Kosztów "Talerzyka":** Koszt gości jest precyzyjnie obliczany na podstawie **dynamicznie ustawianych widełek wiekowych** i faktycznej liczby potwierdzonych gości (dorośli, dzieci 4-10, dzieci 0-3).
+*   **Centralne Zarządzanie Widełkami:** Widełki wiekowe dzieci i ceny są edytowalne z poziomu panelu Budżetu.
 
-### 2. **Zadania i Kalendarz**
-- **Lista Zadań (To-Do):** Możliwość dodawania zadań z terminem wykonania i przypisaniem osoby odpowiedzialnej.
-- **Oznaczanie postępów:** Zadania można oznaczać jako "ukończone".
-- **Interaktywny Kalendarz:** Wizualna prezentacja wszystkich zadań w widoku miesięcznym, co ułatwia planowanie w czasie.
-- **Automatyczne zadania płatności:** Po dodaniu kosztu z terminem płatności, w kalendarzu automatycznie pojawia się dedykowane zadanie przypominające o zapłacie.
+### 🛋️ Plan Stołów (Usadzanie Gości)
+*   **Ulepszona Wizualizacja:** Nowy, **wyraźny widok** stołów prostokątnych (pionowy układ z miejscami po obu stronach) i okrągłych, z priorytetem na czytelność pełnych nazwisk.
+*   **Większe Strefy Upuszczania:** Poprawiona ergonomia Drag & Drop dzięki większym polom na usadzenie gości.
+*   **Szybkie Zarządzanie:** Przycisk "Wyczyść Usadzenie" do szybkiego usuwania wszystkich gości ze stołu.
 
-### 3. **Lista Gości**
-- **Zarządzanie gośćmi:** Dodawanie gości w grupach (np. pary, rodziny z dziećmi).
-- **Potwierdzenia obecności (RSVP):** Możliwość śledzenia, którzy goście potwierdzili swoje przybycie.
-- **Zarządzanie noclegami:** Opcja przypisania liczby osób z danej grupy, które będą potrzebowały noclegu.
-- **Filtrowanie:** Szybkie filtrowanie listy gości (wszyscy, potwierdzeni, niepotwierdzeni).
-- **Automatyczne podsumowania:** Aplikacja na bieżąco zlicza całkowitą liczbę gości, w tym dorosłych i dzieci.
+### 🛠️ Inne Ulepszenia
+*   **Pełny podział (MVC-Light):** Logika PHP (Kontroler `index.php`) oddzielona od widoków (`views/dashboard.php`).
+*   **Podsumowanie Zaproszonych:** Stopka tabeli gości wyświetla wskaźnik odpowiedzi, porównując **Zaproszonych** (suma max) z **Potwierdzonymi (final)**.
 
-### 4. **Budżet i Koszty**
-- **Konfiguracja cennika:** Możliwość zdefiniowania kosztów "za talerzyk" dla dorosłych i dzieci oraz ceny noclegu.
-- **Śledzenie kosztów usługodawców:** Dodawanie wydatków na poszczególne usługi (DJ, fotograf, sala, etc.), wraz z informacją o wpłaconej zaliczce i terminie płatności.
-- **Dynamiczne podsumowanie budżetu:** Aplikacja automatycznie oblicza:
-    - Całkowity koszt wesela (koszt "talerzyka" + noclegi + usługi).
-    - Sumę już dokonanych wpłat.
-    - Kwotę, która pozostała do zapłaty.
+## ⚙️ Wymagania Techniczne
 
-### 5. **Plan Stołów**
-- **Graficzny interfejs:** Możliwość tworzenia wirtualnych stołów (okrągłych lub prostokątnych) o określonej liczbie miejsc.
-- **Przeciągnij i Upuść (Drag & Drop):** Intuicyjne przypisywanie gości (tylko tych z potwierdzoną obecnością) do konkretnych miejsc przy stołach.
-- **Pula gości do usadzenia:** Przejrzysta lista gości, którzy jeszcze nie mają przypisanego miejsca.
-- **Wizualizacja obłożenia:** Stoły na bieżąco pokazują, ile miejsc jest już zajętych.
+*   PHP 7.4+
+*   MySQL / MariaDB
+*   Serwer WWW (Apache/Nginx, XAMPP/WAMP/MAMP)
 
-### 6. **Eksport i Zarządzanie Danymi**
-- **Generowanie Raportów:** Możliwość wyeksportowania kluczowych danych (listy gości, budżetu, planu stołów) do uniwersalnych formatów:
-    - **PDF:** Profesjonalnie sformatowany raport, idealny do wydruku.
-    - **Excel (.xlsx):** Dane w formie arkuszy kalkulacyjnych do dalszej analizy.
-- **Eksport/Import Danych Aplikacji:** Funkcjonalność zapisu całego stanu organizera do pliku `.json`, co pozwala na tworzenie kopii zapasowych lub przenoszenie danych.
+## 🚀 Instalacja i Pierwsze Uruchomienie
 
----
+1.  **Klonowanie/Pobranie:** Pobierz pliki projektu do katalogu serwera (np. `htdocs/organizer`).
+2.  **Konfiguracja DB:** Utwórz bazę danych (np. `wedding_organizer`).
+3.  **Import Schematu:** Użyj pliku `sql_schema.sql` do stworzenia początkowych tabel.
+4.  **Połączenie z DB:** Upewnij się, że plik `db_connect.php` (niezałączony w opisie, ale wymagany) zawiera poprawne dane logowania.
+5.  **Logowanie:** Aplikacja wymaga systemu logowania i autoryzacji (pliki `auth.php`, `login.php` nie są częścią tego opisu, ale są wymagane). Po zalogowaniu możesz używać aplikacji.
 
-## 🛠️ Stos Technologiczny
+### ⚠️ Migracja Istniejącej Bazy Danych
 
-- **Backend:**
-    - **PHP 7.4+** (z rozszerzeniem MySQLi)
-    - **MySQL / MariaDB** jako system zarządzania bazą danych
-- **Frontend:**
-    - **HTML5**
-    - **CSS3** (bez dodatkowych frameworków)
-    - **JavaScript (ES6+)**
-- **Biblioteki JavaScript:**
-    - **jsPDF** & **jsPDF-AutoTable** do generowania plików PDF
-    - **XLSX (SheetJS)** do generowania plików Excel
+Jeśli aktualizujesz starszą wersję bazy danych, musisz wykonać następujące skrypty SQL, aby wprowadzić nowe kolumny i dostosować strukturę:
 
----
+```sql
+-- 1. ZMIANA STRUKTURY DLA WIELU PŁATNOŚCI
+-- A) Dodanie tabeli płatności
+CREATE TABLE vendor_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vendor_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_date DATE NOT NULL,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+);
+-- B) Usunięcie starych kolumn z vendors
+ALTER TABLE vendors 
+DROP COLUMN deposit,
+DROP COLUMN paid_full;
 
-## 🚀 Instalacja i Uruchomienie
 
-1.  **Sklonuj repozytorium:**
-    ```bash
-    git clone https://github.com/twoj-uzytkownik/nazwa-repozytorium.git
-    cd nazwa-repozytorium
-    ```
-2.  **Baza danych:**
-    - Utwórz nową bazę danych MySQL (np. o nazwie `wedding_organizer`).
-    - Zaimportuj schemat bazy danych, wykonując zapytania z pliku `sql_schema.sql`.
-3.  **Konfiguracja:**
-    - Zmień nazwę pliku `db_connect.example.php` na `db_connect.php`.
-    - W pliku `db_connect.php` podaj swoje dane dostępowe do bazy danych (host, nazwa użytkownika, hasło, nazwa bazy).
-4.  **Serwer:**
-    - Umieść pliki aplikacji na serwerze WWW obsługującym PHP i MySQL (np. XAMPP, WAMP, lub dowolny hosting).
-5.  **Uruchomienie:**
-    - Otwórz aplikację w przeglądarce, przechodząc pod odpowiedni adres URL.
+-- 2. ZMIANA STRUKTURY DLA RSVP I FINALNYCH LICZB
+-- A) Aktualizacja statusów RSVP
+ALTER TABLE guests MODIFY COLUMN rsvp_status ENUM('unconfirmed', 'pending', 'confirmed', 'rejected') NOT NULL DEFAULT 'unconfirmed';
+-- B) Dodanie kolumn dla uwag i finalnej liczby gości
+ALTER TABLE guests ADD COLUMN notes VARCHAR(500) DEFAULT NULL;
+ALTER TABLE guests ADD COLUMN confirmed_adults TINYINT DEFAULT 0;
+ALTER TABLE guests ADD COLUMN confirmed_children TINYINT DEFAULT 0;
 
----
-
-## 💡 Możliwości Dalszego Rozwoju
-
-- Implementacja systemu uwierzytelniania dla wielu użytkowników.
-- Automatyczne powiadomienia e-mail o nadchodzących zadaniach i płatnościach.
-- Zaawansowane statystyki i wizualizacje danych na pulpicie.
-- Moduł zarządzania preferencjami żywieniowymi gości.
-- Galeria inspiracji i notatki przypisane do poszczególnych usługodawców.
+-- 3. OPCJONALNA MIGRACJA DANYCH
+-- Jeśli chcesz, aby stary 'deposit' stał się pierwszą płatnością:
+/*
+INSERT INTO vendor_payments (vendor_id, amount, payment_date, description)
+SELECT id, deposit, CURDATE(), 'Zaliczka (migracja)'
+FROM vendors
+WHERE deposit > 0;
+*/
+```

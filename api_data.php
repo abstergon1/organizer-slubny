@@ -1,48 +1,43 @@
 <?php
 // api_data.php
+require_once 'auth.php'; 
 require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-$dataType = $_GET['dataType'] ?? '';
+// Dodano zabezpieczenie przed Undefined variable $organizer_id
+$organizer_id = $organizer_id ?? null;
 
+$dataType = $_GET['dataType'] ?? '';
 $data = [];
 
 switch ($dataType) {
+    case 'settings':
+        $data = get_settings($organizer_id);
+        break;
     case 'tasks':
-        $data = get_tasks();
+        $data = get_tasks($organizer_id);
         break;
     case 'guests':
-        $data = get_guests();
+        $data = get_guests($organizer_id);
         break;
     case 'vendors':
+<<<<<<< Updated upstream
         $data = get_vendors();
+=======
+        $data = get_vendors($organizer_id);
+>>>>>>> Stashed changes
         break;
     case 'tables':
-        $data = get_tables();
-        // Dodatkowa logika do uzupełnienia nazw gości w miejscach
-        foreach ($data as &$table) {
-            foreach ($table['seats'] as &$seat) {
-                if ($seat['person_type'] && $seat['person_id']) {
-                    $seat['person_name'] = get_person_name($seat['person_type'], $seat['person_id']);
-                }
-            }
-        }
+        $data = get_tables($organizer_id);
         break;
-    case 'settings':
-        $data = [
-            'wedding_date' => get_setting('wedding_date'),
-            'price_adult' => get_setting('price_adult'),
-            'price_child_older' => get_setting('price_child_older'),
-            'price_child_younger' => get_setting('price_child_younger'),
-            'price_accommodation' => get_setting('price_accommodation'),
-        ];
+    // DODANO OBSŁUGĘ TEGO TYPU DANYCH
+    case 'organizer_users':
+        $data = get_organizer_users($organizer_id);
         break;
-    // Dodaj inne przypadki dla innych typów danych
     default:
         $data = ['error' => 'Nieznany typ danych'];
         break;
 }
 
 echo json_encode($data);
-?>
