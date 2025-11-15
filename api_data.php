@@ -22,11 +22,7 @@ switch ($dataType) {
         $data = get_guests($organizer_id);
         break;
     case 'vendors':
-<<<<<<< Updated upstream
-        $data = get_vendors();
-=======
         $data = get_vendors($organizer_id);
->>>>>>> Stashed changes
         break;
     case 'tables':
         $data = get_tables($organizer_id);

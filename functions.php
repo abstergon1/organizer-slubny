@@ -25,34 +25,23 @@ function get_person_name($person_type, $person_id) {
     return "Błąd Gościa";
 }
 // --- USTAWIENIA ---
-// ... (get_settings, update_setting bez zmian)
 function get_settings($organizer_id) {
     global $conn;
-<<<<<<< Updated upstream
-    $stmt = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
-    $stmt->bind_param("sss", $key, $value, $value);
-    return $stmt->execute();
-}
-
-// --- Funkcje dla zadań ---
-function get_tasks() {
-    global $conn;
-    $result = $conn->query("SELECT * FROM tasks ORDER BY date ASC");
-    $tasks = [];
-=======
     $settings = [];
     $stmt = $conn->prepare("SELECT setting_key, setting_value FROM settings WHERE organizer_id = ?");
     $stmt->bind_param("i", $organizer_id);
     $stmt->execute();
     $result = $stmt->get_result();
->>>>>>> Stashed changes
     while ($row = $result->fetch_assoc()) {
+        // Nowe klucze: 'photos_info', 'rodo_info' zostaną pobrane
         $settings[$row['setting_key']] = $row['setting_value'];
     }
     return $settings;
 }
+
 function update_setting($organizer_id, $key, $value) {
     global $conn;
+    // Nowe klucze: 'photos_info', 'rodo_info' zostaną zapisane
     $stmt = $conn->prepare("INSERT INTO settings (organizer_id, setting_key, setting_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
     $stmt->bind_param("isss", $organizer_id, $key, $value, $value);
     return $stmt->execute();
@@ -372,12 +361,6 @@ function delete_vendor($organizer_id, $vendor_id) {
     } catch (Exception $e) { $conn->rollback(); return false; }
 }
 
-<<<<<<< Updated upstream
-// --- Funkcje dla stołów i miejsc (szkielet) ---
-function get_tables() {
-    global $conn;
-    $result = $conn->query("SELECT * FROM tables");
-=======
 // --- STOŁY I MIEJSCA ---
 // ... (reszta funkcji bez zmian)
 function get_tables($organizer_id) {
@@ -386,7 +369,6 @@ function get_tables($organizer_id) {
     $stmt->bind_param("i", $organizer_id);
     $stmt->execute();
     $result = $stmt->get_result();
->>>>>>> Stashed changes
     $tables = [];
     while ($table_row = $result->fetch_assoc()) {
         $seat_stmt = $conn->prepare("SELECT * FROM table_seats WHERE table_id = ? ORDER BY seat_index ASC");

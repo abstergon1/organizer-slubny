@@ -304,7 +304,7 @@
                 </section>
             </div>
 			        
-        <!-- Strona 7: Info dla Gości (CMS) -->
+       <!-- Strona 7: Info dla Gości (CMS) -->
         <div id="guest_info" class="page">
             <section id="guest-info-section">
                 <h2>Zarządzanie Informacjami dla Gości (RSVP)</h2>
@@ -331,6 +331,18 @@
                     <label for="key_info">Dodatkowe Ważne Info (np. Dress Code, Prezenty)</label>
                     <textarea id="key_info" name="key_info" rows="5"><?php echo htmlspecialchars($settings['key_info'] ?? ''); ?></textarea>
 
+                    <!-- START: NOWE POLA DLA ZDJĘĆ I RODO -->
+
+                    <h3>Informacja o Zdjęciach i Wideo</h3>
+                    <label for="photos_info">Tekst wyświetlany po weselu w sekcji "Zdjęcia i Wideo":</label>
+                    <textarea id="photos_info" name="photos_info" rows="3"><?php echo htmlspecialchars($settings['photos_info'] ?? 'Materiały z uroczystości (zdjęcia i wideo) będą udostępnione Gościom po ich otrzymaniu i obróbce przez parę młodą. Spodziewany termin to **[WPISZ TERMIN]**. O ich dostępności zostaną Państwo poinformowani osobną wiadomością.'); ?></textarea>
+
+                    <h3>Klauzula RODO</h3>
+                    <label for="rodo_info">Treść RODO wyświetlana małą czcionką na dole strony:</label>
+                    <textarea id="rodo_info" name="rodo_info" rows="5"><?php echo htmlspecialchars($settings['rodo_info'] ?? 'Administratorem Państwa danych osobowych (imię, nazwisko, adres e-mail, status obecności, uwagi) podanych w celu organizacji wesela są Państwo Młodzi. Dane są przetwarzane wyłącznie w celu organizacji i zarządzania listą gości weselnych, potwierdzania obecności, organizacji noclegów i poprawin oraz komunikacji związanej z uroczystością, na podstawie prawnie uzasadnionego interesu (art. 6 ust. 1 lit. f RODO). Podanie danych jest dobrowolne, lecz niezbędne do uczestnictwa w uroczystości. Mają Państwo prawo dostępu do treści swoich danych oraz ich poprawiania, usunięcia lub ograniczenia przetwarzania. Dane będą przechowywane do czasu zakończenia organizacji wesela i rozliczeń związanych z uroczystością.'); ?></textarea>
+
+                    <!-- END: NOWE POLA -->
+
                     <h3>Kontakty</h3>
                     <label for="contact_bride_phone">Kontakt do Panny Młodej (np. Anna: 500 111 222)</label>
                     <input type="text" id="contact_bride_phone" name="contact_bride_phone" value="<?php echo htmlspecialchars($settings['contact_bride_phone'] ?? ''); ?>">
@@ -342,7 +354,6 @@
                 </form>
             </section>
         </div>
-  		
 			
         <?php else: ?>
             <!-- Widok dla admina, który nie ma jeszcze swojego organizera (bez zmian) -->

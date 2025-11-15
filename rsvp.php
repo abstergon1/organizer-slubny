@@ -82,6 +82,14 @@ if ($token) {
         .info-box p, .info-box ul { margin: 5px 0; }
         .map-container { overflow: hidden; margin: 15px 0; border-radius: 5px; border: 1px solid #ddd; }
         .map-container iframe { width: 100%; height: 200px; border: none; }
+        /* Styl dla informacji RODO */
+        .rodo-text { 
+            font-size: 0.7em; 
+            color: #777; 
+            margin-top: 25px; 
+            text-align: justify; 
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -93,8 +101,10 @@ if ($token) {
         <?php elseif ($guest): 
             // Zmienne dla nazw i liczenia
             $guest_names = array_filter([$guest['guest1_name'], $guest['guest2_name']]);
-            $total_people = count($guest_names) + count($guest['children']);
+            // ZMIANA: Używamy potwierdzonej liczby dorosłych, a nie zaproszonej
+            $total_people = $guest['confirmed_adults'] + $guest['confirmed_children'];
             $names_string = implode(' & ', $guest_names);
+            // ZMIANA: Sprawdzamy zaproszone dzieci
             if (count($guest['children']) > 0) {
                 $names_string .= " (oraz " . count($guest['children']) . " dzieci)";
             }
@@ -111,6 +121,7 @@ if ($token) {
                     if ($guest['rsvp_status'] === 'unconfirmed') echo 'Czekamy na Państwa odpowiedź';
                     if ($guest['rsvp_status'] === 'pending') echo 'Oczekuje na powinformowanie Państwa Młodych, do czasu ich zatweirdzenia mogą Państwo edytować poniższe dane';
                     if ($guest['rsvp_status'] === 'confirmed') echo 'Obecność potwierdzona przez Państwa Młodych';
+                    if ($guest['rsvp_status'] === 'rejected') echo 'Państwa rezygnacja została odnotowana'; // DODANO rejected
                 ?>
             </p>
 
@@ -119,12 +130,9 @@ if ($token) {
             <?php endif; ?>
 
             <?php 
-                // ZMIANA: Formularz powinien się wyświetlić TYLKO, gdy status to UNCONFIRMED
-                $can_answer = $guest['rsvp_status'] === 'unconfirmed'; 
-                // Dodatkowo, jeśli gość odpowiedział, ale to nie jest finalny status 'confirmed', 
-                // powinien mieć możliwość edycji swojej odpowiedzi (ale upraszczamy to i pozwalamy na edycję, 
-                // dopóki organizator nie zatwierdzi)
-                $can_edit = $guest['rsvp_status'] !== 'confirmed'; // Niech pending też może edytować
+                // ZMIANA: Formularz powinien się wyświetlić TYLKO, gdy status to UNCONFIRMED lub PENDING
+                $can_edit = $guest['rsvp_status'] === 'unconfirmed' || $guest['rsvp_status'] === 'pending';
+                $total_invited = count(array_filter([$guest['guest1_name'], $guest['guest2_name']])) + count($guest['children']); // Całkowita liczba zaproszonych
             ?>
 
             <?php if ($can_edit): ?>
@@ -134,13 +142,13 @@ if ($token) {
                 <input type="hidden" name="confirmed" id="confirmed_input" value="true">
                 
                 <label for="accommodation_input">Ile osób z Państwa potrzebuje noclegu?</label>
-                <input type="number" id="accommodation_input" name="accommodation" min="0" max="<?php echo $total_people; ?>" value="<?php echo (int)$guest['accommodation']; ?>">
+                <input type="number" id="accommodation_input" name="accommodation" min="0" max="<?php echo $total_invited; ?>" value="<?php echo (int)$guest['accommodation']; ?>">
 
                 <label for="after_party_count_input" style="margin-top: 25px;">Liczba osób na poprawiny:</label>
                 <select id="after_party_count_input" name="after_party_count" style="width: 100%;" onchange="document.getElementById('confirmed_input').value='true';">
                     <?php $current_count = (int)$guest['after_party']; ?>
                     <option value="0" <?php echo $current_count === 0 ? 'selected' : ''; ?>>0 osób (Nie bierzemy udziału)</option>
-                    <?php for ($i = 1; $i <= $total_people; $i++): ?>
+                    <?php for ($i = 1; $i <= $total_invited; $i++): ?>
                         <option value="<?php echo $i; ?>" <?php echo $current_count === $i ? 'selected' : ''; ?>><?php echo $i; ?> osób</option>
                     <?php endfor; ?>
                 </select>
@@ -156,15 +164,13 @@ if ($token) {
                 <!-- TO WYŚWIETLA SIĘ PO REZYGNACJI LUB FINALNYM ZATWIERDZENIU -->
                 <?php if ($guest['rsvp_status'] === 'confirmed'): ?>
                     <p>Cieszymy się, że będziecie z nami! Państwa obecność została już ostatecznie zatwierdzona.</p>
-                <?php else: ?>
-                    <p>Dziękujemy za Państwa informację. Stan Państwa odpowiedzi:
-                       <span class="status-badge status-unconfirmed">Nieobecność potwierdzona przez Gości.</span>
-                    </p>
+                <?php elseif ($guest['rsvp_status'] === 'rejected'): ?>
+                     <p>Państwa rezygnacja została odnotowana. Będziemy tęsknić!</p>
                 <?php endif; ?>
             <?php endif; ?>
 
             <div class="info-box">
-                <!-- NOWE SEKCJE DYNAMICZNE -->
+                <!-- SEKCJE DYNAMICZNE -->
 				                <h3>Kontakt</h3>
                 <p>Panna Młoda: <?php echo $bride_contact; ?></p>
                 <p>Pan Młody: <?php echo $groom_contact; ?></p>
@@ -175,7 +181,8 @@ if ($token) {
                     
                     <?php if (!empty($settings['church_map_embed'])): ?>
                         <p><strong>Kościół:</strong></p>
-                        <div class="map-container"><?php echo $settings['church_map_embed']; ?></div>
+                        <!-- Używamy RAW HTML, ponieważ to jest kod iframe -->
+                        <div class="map-container"><?php echo $settings['church_map_embed']; ?></div> 
                     <?php endif; ?>
 
                     <?php if (!empty($settings['venue_map_embed'])): ?>
@@ -186,6 +193,7 @@ if ($token) {
                 
                 <?php if ($settings['wedding_schedule'] ?? ''): ?>
                     <h3>Plan Dnia</h3>
+                    <!-- Zastosowanie nl2br, ponieważ to jest textarea -->
                     <?php echo nl2br(htmlspecialchars($settings['wedding_schedule'])); ?>
                 <?php endif; ?>
 
@@ -199,6 +207,13 @@ if ($token) {
                     <?php echo nl2br(htmlspecialchars($settings['key_info'])); ?>
                 <?php endif; ?>
 
+                <!-- NOWA SEKCJA: Zdjęcia i Wideo (Pobierane z nowo dodanego ustawienia) -->
+                <?php if ($settings['photos_info'] ?? ''): ?>
+                    <h3>Zdjęcia i Wideo</h3>
+                    <!-- Używamy nl2br, aby zachować łamanie linii z textarea w dashboardzie -->
+                    <p><?php echo nl2br(htmlspecialchars($settings['photos_info'])); ?></p>
+                <?php endif; ?>
+                
                 <?php if ($guest['rsvp_status'] === 'confirmed' && $guest['table_name']): ?>
                     <h3>Miejsce</h3>
                     <p>Zostali Państwo usadzeni przy stole: **<?php echo htmlspecialchars($guest['table_name']); ?>**</p>
@@ -219,6 +234,16 @@ if ($token) {
                     <p>**<?php echo htmlspecialchars($guest['notes']); ?>**</p>
                 <?php endif; ?>
             </div>
+            
+            <!-- Sekcja RODO (mała czcionka, pobierana z nowego ustawienia) -->
+            <?php if ($settings['rodo_info'] ?? ''): ?>
+            <p class="rodo-text">
+                <!-- Używamy nl2br, aby zachować łamanie linii z textarea w dashboardzie -->
+                <?php echo nl2br(htmlspecialchars($settings['rodo_info'])); ?>
+            </p>
+            <?php endif; ?>
+            <!-- Koniec Sekcji RODO -->
+
 
         <?php endif; ?>
     </div>

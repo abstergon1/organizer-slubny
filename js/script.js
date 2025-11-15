@@ -1,12 +1,5 @@
-<<<<<<< Updated upstream
-// js/script.js (wersja AJAX)
-
-// --- GLOBALNE ZMIENNE STANU (CACHE) ---
-let tasks = [], guests = [], vendors = [], tables = [];
-=======
 // --- GLOBALNE ZMIENNE ---
 let tasks = [], guests = [], vendors = [], tables = [], users = [];
->>>>>>> Stashed changes
 let currentDate = new Date();
 let guestFilterState = 'all';
 let countdownInterval;
@@ -50,13 +43,8 @@ async function handleFormSubmit(event) {
         const result = await response.json();
         if (!result.success) throw new Error(result.message || 'Wystąpił nieznany błąd serwera.');
 
-<<<<<<< Updated upstream
-        // Sukces! Wyczyść formularz (jeśli to formularz dodawania) i odśwież widok.
-        if (form.classList.contains('task-input') || form.classList.contains('guest-form') || form.classList.contains('vendor-form') || form.classList.contains('table-controls')) {
-=======
         // ZMIANA: Resetowanie formularza dodawania płatności
         if (form.classList.contains('task-input') || form.classList.contains('guest-form') || form.classList.contains('vendor-form') || form.classList.contains('table-controls') || form.id === 'add-invite-user-form' || form.id === 'create-user-form') {
->>>>>>> Stashed changes
             form.reset();
             if (form.classList.contains('guest-form')) {
                 document.getElementById('children-inputs').innerHTML = `<div><input type="text" placeholder="Imię dziecka" name="addChildName[]"><input type="number" placeholder="Wiek" min="0" name="addChildAge[]"></div>`;
@@ -100,16 +88,10 @@ async function fetchData(dataType) {
  * Główna funkcja do pobierania wszystkich danych i odświeżania interfejsu.
  */
 async function renderAll() {
-<<<<<<< Updated upstream
-    const [settingsData, tasksData, guestsData, vendorsData, tablesData] = await Promise.all([
-        fetchData('settings'), fetchData('tasks'), fetchData('guests'), fetchData('vendors'), fetchData('tables')
-    ]);
-=======
     const dataToFetch = ['settings', 'tasks', 'guests', 'vendors', 'tables', 'organizer_users'];
     const [settingsData, tasksData, guestsData, vendorsData, tablesData, usersData] = await Promise.all(
         dataToFetch.map(type => fetchData(type))
     );
->>>>>>> Stashed changes
 
      if (settingsData && typeof settingsData === 'object' && !Array.isArray(settingsData)) {
         // Sprawdzamy, czy elementy istnieją, zanim cokolwiek zrobimy
@@ -135,12 +117,6 @@ async function renderAll() {
             updateBudgetDisplay(); // NOWE: Aktualizacja wyświetlanych widełek
         }
     }
-<<<<<<< Updated upstream
-    tasks = tasksData; renderTasks(); renderCalendar();
-    guests = guestsData; renderGuests();
-    vendors = vendorsData; renderVendors();
-    tables = tablesData; renderTables(); renderUnassignedGuests();
-=======
 
     tasks = Array.isArray(tasksData) ? tasksData : [];
     guests = Array.isArray(guestsData) ? guestsData : [];
@@ -154,7 +130,6 @@ async function renderAll() {
     renderVendors();
     renderTables(); renderUnassignedGuests();
     renderUsers();
->>>>>>> Stashed changes
     updateBudget();
 }
 
@@ -575,11 +550,8 @@ function confirmRemoveVendor(vendorId) {
     });
 }
 
-<<<<<<< Updated upstream
-=======
 // script.js (cała funkcja updateBudget)
 
->>>>>>> Stashed changes
 function updateBudget() {
     const priceAdultEl = document.getElementById("priceAdult");
     if (!priceAdultEl) return;
@@ -598,12 +570,6 @@ function updateBudget() {
     
     let mealCost = 0, accommCost = 0;
 
-<<<<<<< Updated upstream
-    guests.filter(g => parseInt(g.confirmed) === 1).forEach(g => {
-        if (g.guest1_name) mealCost += pA;
-        if (g.guest2_name) mealCost += pA;
-        if (g.children) g.children.forEach(c => mealCost += parseInt(c.age) <= 3 ? pCY : parseInt(c.age) <= 12 ? pCO : pA);
-=======
     // Implementacja precyzyjnego walidatora wieku
     guests.filter(g => g.rsvp_status === 'confirmed').forEach(g => {
         const confirmedAdults = parseInt(g.confirmed_adults) || 0;
@@ -643,16 +609,11 @@ function updateBudget() {
         }
         
         // 3. KOSZT NOCLEGU: Bez zmian
->>>>>>> Stashed changes
         accommCost += (parseInt(g.accommodation) || 0) * pAcc;
     });
 
     let vendorTotal = vendors.reduce((sum, v) => sum + (parseFloat(v.cost) || 0), 0);
-<<<<<<< Updated upstream
-    let totalPaid = vendors.reduce((sum, v) => sum + (parseInt(v.paid_full) === 1 ? parseFloat(v.cost) : parseFloat(v.deposit) || 0), 0);
-=======
     let totalPaid = vendors.reduce((sum, v) => sum + (parseFloat(v.total_paid) || 0), 0);
->>>>>>> Stashed changes
     
     document.getElementById("guestMealCost").textContent = mealCost.toFixed(2);
     document.getElementById("guestAccommCost").textContent = accommCost.toFixed(2);

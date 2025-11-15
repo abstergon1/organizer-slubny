@@ -131,14 +131,4 @@ CREATE TABLE settings (
     FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE
 );
 
-<<<<<<< Updated upstream
--- Początkowe dane dla ustawień (POPRAWIONA SEKCJA)
-INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
-('wedding_date', ''),
-('price_adult', '0'),
-('price_child_older', '0'),
-('price_child_younger', '0'),
-('price_accommodation', '0');
-=======
 
->>>>>>> Stashed changes

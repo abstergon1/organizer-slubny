@@ -10,15 +10,11 @@ if (!$is_admin && !$organizer_id) {
     die("Nie masz jeszcze dostępu do żadnego organizera. Skontaktuj się z administratorem, aby Cię zaprosił.");
 }
 
-<<<<<<< Updated upstream
-// --- Obsługa żądań POST (teraz wszystkie zwracają JSON) ---
-=======
 // Pobieranie ustawień dla widoku
 $settings = $organizer_id ? get_settings($organizer_id) : [];
 
 // --- LOGIKA OBSŁUGI ŻĄDAŃ POST (AJAX) ---
 
->>>>>>> Stashed changes
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $action = $_POST['action'] ?? '';
@@ -142,74 +138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (!update_guest_after_party($organizer_id, $guest_id, $value_int)) {
                              throw new Exception("Nie udało się zaktualizować liczby osób na poprawinach.");
                         }
-<<<<<<< Updated upstream
-                    }
-                }
-                edit_guest((int)$_POST['editGuestId'], $_POST['editGuest1Name'], $_POST['editGuest2Name'], $children_data);
-                $response = ['success' => true, 'message' => 'Dane gości zaktualizowane.'];
-                break;
-            case 'update_guest_status':
-                 $key = $_POST['key'];
-                 $value = ($key === 'confirmed') ? (($_POST['value'] === 'true') ? 1 : 0) : (int)$_POST['value'];
-                 update_guest_status((int)$_POST['guest_id'], $key, $value);
-                 $response = ['success' => true, 'message' => 'Status gościa zaktualizowany.'];
-                 break;
-            case 'delete_guest':
-                delete_guest((int)$_POST['guest_id']);
-                $response = ['success' => true, 'message' => 'Grupa gości usunięta.'];
-                break;
-            case 'add_vendor':
-                $paid_full = isset($_POST['vendorPaidFull']) ? 1 : 0;
-                $payment_date = $_POST['vendorPaymentDate'] ?? null;
-                $vendor_name = $_POST['vendorName'];
-                
-                // Funkcja add_vendor zwraca teraz ID nowego dostawcy lub false
-                $new_vendor_id = add_vendor($vendor_name, (float)$_POST['vendorCost'], (float)$_POST['vendorDeposit'], $paid_full, $payment_date);
-
-                if ($new_vendor_id) {
-                    // Jeśli podano datę płatności, utwórz powiązane zadanie
-                    if (!empty($payment_date)) {
-                        add_task(
-                            "Zapłać dla: " . $vendor_name,
-                            $payment_date,
-                            'Para Młoda',  // Domyślny właściciel zadania
-                            true,          // Oznacz jako zadanie płatności
-                            $new_vendor_id // Powiąż z ID dostawcy
-                        );
-                    }
-                    $response = ['success' => true, 'message' => 'Koszt dodany.'];
-                } else {
-                    $response = ['success' => false, 'message' => 'Nie udało się dodać kosztu.'];
-                }
-                break;
-
-            case 'edit_vendor':
-                $vendor_id = (int)$_POST['editVendorId'];
-                $paid_full = isset($_POST['editVendorPaidFull']) ? 1 : 0;
-                $payment_date = !empty($_POST['editVendorPaymentDate']) ? $_POST['editVendorPaymentDate'] : null;
-                $vendor_name = $_POST['editVendorName'];
-
-                if (update_vendor($vendor_id, $vendor_name, (float)$_POST['editVendorCost'], (float)$_POST['editVendorDeposit'], $paid_full, $payment_date)) {
-                    // Znajdź istniejące zadanie płatności dla tego dostawcy
-                    $existing_task_stmt = $conn->prepare("SELECT id FROM tasks WHERE vendor_id = ? AND is_payment_task = 1");
-                    $existing_task_stmt->bind_param("i", $vendor_id);
-                    $existing_task_stmt->execute();
-                    $existing_task_result = $existing_task_stmt->get_result();
-                    $existing_task = $existing_task_result->fetch_assoc();
-
-                    if ($payment_date && $existing_task) {
-                        // SCENARIUSZ 1: Data istnieje i zadanie istnieje -> Zaktualizuj zadanie
-                        $update_task_stmt = $conn->prepare("UPDATE tasks SET date = ?, name = ? WHERE id = ?");
-                        $new_name = "Zapłać dla: " . $vendor_name;
-                        $update_task_stmt->bind_param("ssi", $payment_date, $new_name, $existing_task['id']);
-                        $update_task_stmt->execute();
-                    } elseif ($payment_date && !$existing_task) {
-                        // SCENARIUSZ 2: Data istnieje, ale zadania nie ma -> Utwórz nowe zadanie
-                        add_task("Zapłać dla: " . $vendor_name, $payment_date, 'Para Młoda', true, $vendor_id);
-                    } elseif (!$payment_date && $existing_task) {
-                        // SCENARIUSZ 3: Daty nie ma, ale zadanie istnieje -> Usuń zadanie
-                        delete_task($existing_task['id']);
-=======
                     } elseif ($key === 'confirmed_adults') { // NOWA LOGIKA
                         $value_int = (int)$value;
                         if (!update_confirmed_adults($organizer_id, $guest_id, $value_int)) {
@@ -223,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         // W oryginalnym kodzie była jeszcze 'confirmed', której już nie używamy
                         update_guest_status($organizer_id, $guest_id, $key, $value); 
->>>>>>> Stashed changes
                     }
                     
                     $response = ['success' => true]; 
@@ -287,7 +214,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $info_keys = [
                         'church_map_embed', 'venue_map_embed', 
                         'wedding_schedule', 'wedding_menu', 'key_info',
-                        'contact_bride_phone', 'contact_groom_phone'
+                        'contact_bride_phone', 'contact_groom_phone',
+                        'photos_info', 
+                        'rodo_info'    
                     ];
                     
                     foreach ($info_keys as $key) {
@@ -340,219 +269,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-<<<<<<< Updated upstream
-    <!-- MODAL DO EDYCJI KOSZTÓW -->
-    <div id="edit-vendor-modal" class="modal-overlay">
-        <div class="modal-content">
-            <!-- Dodajemy klasę .ajax-form -->
-            <form class="ajax-form">
-                <h2>Edytuj Koszt Usługodawcy</h2>
-                <input type="hidden" name="action" value="edit_vendor">
-                <input type="hidden" id="editVendorId" name="editVendorId">
-                <label>Nazwa usługi</label><input type="text" id="editVendorName" name="editVendorName">
-                <label>Całkowity koszt</label><input type="number" id="editVendorCost" name="editVendorCost" min="0" step="0.01">
-                <label>Zapłacona zaliczka</label><input type="number" id="editVendorDeposit" name="editVendorDeposit" min="0" step="0.01">
-                <label>Data płatności</label><input type="date" id="editVendorPaymentDate" name="editVendorPaymentDate">
-                <label class="checkbox-label"><input type="checkbox" id="editVendorPaidFull" name="editVendorPaidFull"> Opłacone w całości</label>
-                <div class="modal-actions">
-                    <button type="submit">Zapisz Zmiany</button>
-                    <button type="button" class="secondary" onclick="closeModal('edit-vendor-modal')">Anuluj</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <header>
-        <h1>Mój Organizer Ślubny</h1>
-        <nav id="main-nav">
-            <button class="nav-button active" data-page="dashboard">Pulpit</button>
-            <button class="nav-button" data-page="tasks">Zadania i Kalendarz</button>
-            <button class="nav-button" data-page="guests">Lista Gości</button>
-            <button class="nav-button" data-page="budget">Budżet</button>
-            <button class="nav-button" data-page="seating">Plan Stołów</button>
-            <button class="nav-button" data-page="export">Eksport</button>
-        </nav>
-    </header>
-
-    <main>
-        <!-- Strona 1: Pulpit -->
-        <div id="dashboard" class="page active">
-            <section class="dashboard-hero">
-                <div class="dashboard-content">
-                    <h2>Nasza Data Ślubu</h2>
-                    <!-- Dodajemy klasę .ajax-form -->
-                    <form class="date-setter ajax-form">
-                        <input type="hidden" name="action" value="save_wedding_date">
-                        <input type="date" id="weddingDate" name="wedding_date" title="Ustaw datę ślubu" value="<?php echo htmlspecialchars($settings['wedding_date'] ?? ''); ?>">
-                        <button type="submit">Zapisz Datę</button>
-                    </form>
-                    <div id="countdown-container">
-                        <div id="countdown">Ustaw datę, aby rozpocząć odliczanie.</div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- Strona 2: Zadania -->
-        <div id="tasks" class="page">
-             <section id="tasks-section">
-                <h2>Zarządzanie Zadaniami</h2>
-                <!-- Dodajemy klasę .ajax-form -->
-                <form class="task-input ajax-form">
-                    <input type="hidden" name="action" value="add_task">
-                    <input type="text" id="taskName" name="taskName" placeholder="Nazwa zadania" required>
-                    <input type="date" id="taskDate" name="taskDate" required>
-                    <input type="text" id="taskOwner" name="taskOwner" placeholder="Odpowiedzialny">
-                    <button type="submit">Dodaj zadanie</button>
-                </form>
-                <h3>Lista Zadań (chronologicznie)</h3>
-                <ul id="taskList"></ul>
-                <h3>Widok Kalendarza</h3>
-                <div id="calendar-controls">
-                    <button type="button" onclick="previousMonth()">‹ Poprzedni</button>
-                    <h3 id="calendar-month-year"></h3>
-                    <button type="button" onclick="nextMonth()">Następny ›</button>
-                </div>
-                <div id="calendar-view"></div>
-            </section>
-        </div>
-
-        <!-- Strona 3: Goście -->
-        <div id="guests" class="page">
-             <section id="guests-section">
-                <h2>Zarządzanie Listą Gości</h2>
-                <!-- Dodajemy klasę .ajax-form -->
-                <form class="guest-form ajax-form">
-                    <input type="hidden" name="action" value="add_guest">
-                    <input type="text" id="guest1Name" name="guest1Name" placeholder="Gość 1 (mężczyzna)">
-                    <input type="text" id="guest2Name" name="guest2Name" placeholder="Gość 2 (kobieta)">
-                    <p>Dodaj dzieci (imię i wiek):</p>
-                    <div id="children-inputs">
-                        <div>
-                            <input type="text" placeholder="Imię dziecka" name="addChildName[]">
-                            <input type="number" placeholder="Wiek" min="0" name="addChildAge[]">
-                        </div>
-                    </div>
-                    <button type="button" onclick="addChildInput('add')">+ Dodaj kolejne dziecko</button>
-                    <button type="submit">Dodaj Gości / Rodzinę</button>
-                </form>
-                <div class="guest-filters">
-                    <span>Filtruj:</span>
-                    <button type="button" class="filter-btn active" onclick="filterGuests('all')">Wszyscy</button>
-                    <button type="button" class="filter-btn" onclick="filterGuests('confirmed')">Potwierdzeni</button>
-                    <button type="button" class="filter-btn" onclick="filterGuests('unconfirmed')">Niepotwierdzeni</button>
-                </div>
-                <table id="guestTable">
-                    <thead><tr><th>Goście</th><th>Potwierdzona obecność</th><th>Nocleg (ile osób)</th><th>Akcje</th></tr></thead>
-                    <tbody></tbody>
-                    <tfoot></tfoot>
-                </table>
-            </section>
-        </div>
-        
-        <!-- Strona 4: Budżet -->
-        <div id="budget" class="page">
-             <section id="budget-section">
-                <h2>Budżet i Koszty</h2>
-                <!-- Dodajemy klasę .ajax-form -->
-                <form class="ajax-form">
-                    <input type="hidden" name="action" value="save_wedding_date">
-                    <div class="budget-setup">
-                        <h3>Cennik</h3>
-                        <div class="price-item">
-                            <label for="priceAdult">Cena za osobę dorosłą ("talerzyk"):</label>
-                            <input type="number" id="priceAdult" name="price_adult" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_adult'] ?? '0'); ?>" min="0" step="0.01">
-                        </div>
-                        <div class="price-item">
-                            <label for="priceChildOlder">Cena za dziecko 4-12 lat:</label>
-                            <input type="number" id="priceChildOlder" name="price_child_older" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_child_older'] ?? '0'); ?>" min="0" step="0.01">
-                        </div>
-                        <div class="price-item">
-                            <label for="priceChildYounger">Cena za dziecko 0-3 lat:</label>
-                            <input type="number" id="priceChildYounger" name="price_child_younger" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_child_younger'] ?? '0'); ?>" min="0" step="0.01">
-                        </div>
-                        <div class="price-item">
-                            <label for="priceAccommodation">Koszt noclegu za osobę/noc:</label>
-                            <input type="number" id="priceAccommodation" name="price_accommodation" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_accommodation'] ?? '0'); ?>" min="0" step="0.01">
-                        </div>
-                        <input type="hidden" name="wedding_date" id="hidden_wedding_date" value="<?php echo htmlspecialchars($settings['wedding_date'] ?? ''); ?>">
-                        <button type="submit" style="margin-top: 10px;">Zapisz Cennik</button>
-                    </div>
-                </form>
-                
-                <div class="vendor-costs">
-                    <h3>Koszty Usługodawców</h3>
-                    <!-- Dodajemy klasę .ajax-form -->
-                    <form class="vendor-form ajax-form">
-                        <input type="hidden" name="action" value="add_vendor">
-                        <input type="text" id="vendorName" name="vendorName" placeholder="Usługa (np. DJ, Fotograf)" required>
-                        <input type="number" id="vendorCost" name="vendorCost" placeholder="Całkowity koszt" min="0" step="0.01" required>
-                        <input type="number" id="vendorDeposit" name="vendorDeposit" placeholder="Zapłacona zaliczka" min="0" step="0.01">
-                        <input type="date" id="vendorPaymentDate" name="vendorPaymentDate" title="Data płatności">
-                        <label class="checkbox-label"><input type="checkbox" id="vendorPaidFull" name="vendorPaidFull"> Opłacone w całości</label>
-                        <button type="submit">Dodaj Koszt</button>
-                    </form>
-                    <ul id="vendorList"></ul>
-                </div>
-                <div class="budget-summary">
-                    <h3>Podsumowanie Kosztów</h3>
-                    <p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span> PLN</p>
-                    <p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span> PLN</p>
-                    <p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span> PLN</p><hr>
-                    <p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span> PLN</strong></p>
-                    <p><strong>Suma wpłat (zaliczki + opłacone): <span id="totalPaid">0.00</span> PLN</strong></p>
-                    <p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span> PLN</strong></p>
-                </div>
-            </section>
-        </div>
-
-        <!-- Strona 5: Plan Stołów -->
-        <div id="seating" class="page">
-            <section id="seating-section">
-                <h2>Graficzny Plan Stołów</h2>
-                <!-- Dodajemy klasę .ajax-form -->
-                <form class="table-controls ajax-form">
-                    <input type="hidden" name="action" value="add_table">
-                    <input type="text" id="tableName" name="tableName" placeholder="Nazwa stołu (np. Stół Wiejski)">
-                    <input type="number" id="tableCapacity" name="tableCapacity" placeholder="Liczba miejsc" min="1" required>
-                    <select id="tableShape" name="tableShape">
-                        <option value="rect">Prostokątny</option>
-                        <option value="round">Okrągły</option>
-                    </select>
-                    <button type="submit">Dodaj Stół</button>
-                </form>
-                <div class="seating-area">
-                    <div id="unassigned-guests" class="guest-pool" ondragover="allowDrop(event)" ondrop="dropOnPool(event)"></div>
-                    <div id="tables-container"></div>
-                </div>
-            </section>
-        </div>
-
-        <!-- Strona 6: Eksport -->
-        <div id="export" class="page">
-            <section id="export-section">
-                <h2>Raporty</h2>
-                <p>Wygeneruj raporty z listą gości, budżetem i planem stołów do formatu PDF lub Excel.</p>
-                <div class="export-buttons">
-                    <button type="button" onclick="exportToPDF()">Eksportuj do PDF</button>
-                    <button type="button" onclick="exportToExcel()">Eksportuj do Excel</button>
-                </div>
-            </section>
-            
-            <section id="data-transfer-section">
-                <h2>Przenoszenie Danych (Import/Eksport)</h2>
-                <p>Zapisz wszystkie dane z organizera do jednego pliku, aby przenieść je na inny komputer, lub wczytaj dane z pliku.</p>
-                <div class="export-buttons">
-                    <button type="button" onclick="exportDataToFile()">Eksportuj dane do pliku</button>
-                    <label class="import-label"><input type="file" id="importFileInput" onchange="importDataFromFile(event)" accept=".json"> Importuj dane z pliku</label>
-                </div>
-            </section>
-        </div>
-    </main>
-    <script src="js/script.js"></script>
-</body>
-</html>
-=======
 // --- ŁADOWANIE WIDOKU ---
 require 'views/dashboard.php';
->>>>>>> Stashed changes
