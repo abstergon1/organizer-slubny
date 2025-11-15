@@ -1,9 +1,19 @@
+<<<<<<< Updated upstream
+=======
+// js/script.js (WERSJA OSTATECZNA Z ZABEZPIECZENIAMI)
+
+>>>>>>> Stashed changes
 // --- GLOBALNE ZMIENNE ---
 let tasks = [], guests = [], vendors = [], tables = [], users = [];
 let currentDate = new Date();
 let guestFilterState = 'all';
 let countdownInterval;
+let budgetItems = [];
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 // --- INICJALIZACJA ---
 document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
@@ -43,8 +53,12 @@ async function handleFormSubmit(event) {
         const result = await response.json();
         if (!result.success) throw new Error(result.message || 'Wystąpił nieznany błąd serwera.');
 
+<<<<<<< Updated upstream
         // ZMIANA: Resetowanie formularza dodawania płatności
         if (form.classList.contains('task-input') || form.classList.contains('guest-form') || form.classList.contains('vendor-form') || form.classList.contains('table-controls') || form.id === 'add-invite-user-form' || form.id === 'create-user-form') {
+=======
+        if (form.classList.contains('task-input') || form.classList.contains('guest-form') || form.classList.contains('vendor-form') || form.classList.contains('table-controls') || form.id === 'invite-user-form' || form.id === 'create-user-form') {
+>>>>>>> Stashed changes
             form.reset();
             if (form.classList.contains('guest-form')) {
                 document.getElementById('children-inputs').innerHTML = `<div><input type="text" placeholder="Imię dziecka" name="addChildName[]"><input type="number" placeholder="Wiek" min="0" name="addChildAge[]"></div>`;
@@ -88,6 +102,7 @@ async function fetchData(dataType) {
  * Główna funkcja do pobierania wszystkich danych i odświeżania interfejsu.
  */
 async function renderAll() {
+<<<<<<< Updated upstream
     const dataToFetch = ['settings', 'tasks', 'guests', 'vendors', 'tables', 'organizer_users'];
     const [settingsData, tasksData, guestsData, vendorsData, tablesData, usersData] = await Promise.all(
         dataToFetch.map(type => fetchData(type))
@@ -98,12 +113,24 @@ async function renderAll() {
         const weddingDateEl = document.getElementById('weddingDate');
         if (weddingDateEl) {
             // ... (ustawienia daty/ceny bez zmian)
+=======
+    const dataToFetch = ['settings', 'tasks', 'guests', 'vendors', 'tables', 'organizer_users', 'budget_items'];
+    const [settingsData, tasksData, guestsData, vendorsData, tablesData, usersData, budgetItemsData] = await Promise.all(
+        dataToFetch.map(type => fetchData(type))
+    );
+
+    if (settingsData && typeof settingsData === 'object' && !Array.isArray(settingsData)) {
+        // Sprawdzamy, czy elementy istnieją, zanim cokolwiek zrobimy
+        const weddingDateEl = document.getElementById('weddingDate');
+        if (weddingDateEl) {
+>>>>>>> Stashed changes
             weddingDateEl.value = settingsData.wedding_date || '';
             document.getElementById('hidden_wedding_date').value = settingsData.wedding_date || '';
             document.getElementById('priceAdult').value = settingsData.price_adult || '0';
             document.getElementById('priceChildOlder').value = settingsData.price_child_older || '0';
             document.getElementById('priceChildYounger').value = settingsData.price_child_younger || '0';
             document.getElementById('priceAccommodation').value = settingsData.price_accommodation || '0';
+<<<<<<< Updated upstream
             
             // NOWE: Ustawienia widełek wiekowych
             const ageOlderMinEl = document.getElementById('age_older_min');
@@ -115,6 +142,9 @@ async function renderAll() {
 
             setupCountdown();
             updateBudgetDisplay(); // NOWE: Aktualizacja wyświetlanych widełek
+=======
+            setupCountdown();
+>>>>>>> Stashed changes
         }
     }
 
@@ -133,7 +163,10 @@ async function renderAll() {
     updateBudget();
 }
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 /**
  * Podpina zdarzenia do przycisków nawigacji.
  */
@@ -299,6 +332,10 @@ function getAdminStatusSelect(guestId, currentStatus) {
 
 function renderGuests() {
     const tableBody = document.querySelector('#guestTable tbody');
+<<<<<<< Updated upstream
+=======
+    // Guard Clause:
+>>>>>>> Stashed changes
     if (!tableBody) return;
     const tableFoot = document.querySelector('#guestTable tfoot');
     tableBody.innerHTML = ''; tableFoot.innerHTML = '';
@@ -554,9 +591,14 @@ function confirmRemoveVendor(vendorId) {
 
 function updateBudget() {
     const priceAdultEl = document.getElementById("priceAdult");
+<<<<<<< Updated upstream
     if (!priceAdultEl) return;
     
     // Pobieranie cen
+=======
+    // Guard Clause:
+    if (!priceAdultEl) return;
+>>>>>>> Stashed changes
     const pA = parseFloat(priceAdultEl.value) || 0;
     const pCO = parseFloat(document.getElementById("priceChildOlder").value) || 0;
     const pCY = parseFloat(document.getElementById("priceChildYounger").value) || 0;
@@ -611,6 +653,21 @@ function updateBudget() {
         // 3. KOSZT NOCLEGU: Bez zmian
         accommCost += (parseInt(g.accommodation) || 0) * pAcc;
     });
+	
+			
+	// policz dorosłych potwierdzonych
+let confirmedAdults = 0;
+guests.filter(g => parseInt(g.confirmed) === 1).forEach(g => {
+  if (g.guest1_name) confirmedAdults++;
+  if (g.guest2_name) confirmedAdults++;
+});
+
+// suma pozycji per-dorosły
+let extrasPerAdult = budgetItems.reduce((sum, it) => {
+  const price = parseFloat(it.unit_price) || 0;
+  // dziś każdy item jest per_adult == true
+  return sum + (price * confirmedAdults);
+}, 0);
 
     let vendorTotal = vendors.reduce((sum, v) => sum + (parseFloat(v.cost) || 0), 0);
     let totalPaid = vendors.reduce((sum, v) => sum + (parseFloat(v.total_paid) || 0), 0);
@@ -618,12 +675,15 @@ function updateBudget() {
     document.getElementById("guestMealCost").textContent = mealCost.toFixed(2);
     document.getElementById("guestAccommCost").textContent = accommCost.toFixed(2);
     document.getElementById("vendorTotalCost").textContent = vendorTotal.toFixed(2);
-    const totalCost = mealCost + accommCost + vendorTotal;
+	const totalCost = mealCost + accommCost + vendorTotal + extrasPerAdult;
     document.getElementById("totalWeddingCost").textContent = totalCost.toFixed(2);
     document.getElementById("totalPaid").textContent = totalPaid.toFixed(2);
     document.getElementById("totalRemaining").textContent = (totalCost - totalPaid).toFixed(2);
-}
+	
+	const extrasEl = document.getElementById("extrasPerAdultCost");
+if (extrasEl) extrasEl.textContent = extrasPerAdult.toFixed(2);
 
+<<<<<<< Updated upstream
 function updateBudgetDisplay() {
     const ageOlderMin = parseInt(document.getElementById('age_older_min')?.value) || 4;
     const ageOlderMax = parseInt(document.getElementById('age_older_max')?.value) || 10;
@@ -641,10 +701,16 @@ function updateBudgetDisplay() {
     
     // Zmieniaj cennik, gdy widełki się zmienią
     updateBudget(); 
+=======
+>>>>>>> Stashed changes
 }
 
 function renderTables() {
     const container = document.getElementById("tables-container");
+<<<<<<< Updated upstream
+=======
+    // Guard Clause:
+>>>>>>> Stashed changes
     if (!container) return;
     container.innerHTML = "";
     
@@ -674,6 +740,7 @@ function renderTables() {
         }
 
         table.seats.forEach((seat, index) => {
+<<<<<<< Updated upstream
             const seatDiv = document.createElement("div"); 
             seatDiv.id = `seat-${seat.id}`; 
             
@@ -694,6 +761,14 @@ function renderTables() {
                 const personName = seat.person_name || "Błąd"; 
                 seatDiv.dataset.tooltip = personName; 
                 seatDiv.draggable = true;
+=======
+            const seatDiv = document.createElement("div"); seatDiv.id = `seat-${seat.id}`; seatDiv.className = "seat"; seatDiv.dataset.tableId = table.id; seatDiv.dataset.seatId = seat.id;
+            seatDiv.ondragover = allowDrop; seatDiv.ondrop = dropOnSeat;
+
+            if (seat.person_id) {
+                seatDiv.classList.add("occupied");
+                const personName = seat.person_name || "Błąd"; seatDiv.textContent = personName ? personName.split(" ")[0] : "Błąd"; seatDiv.dataset.tooltip = personName; seatDiv.draggable = true;
+>>>>>>> Stashed changes
                 
                 let shortName;
                 if (seat.person_type === 'child') {
@@ -730,6 +805,7 @@ function renderTables() {
             
             positionSeat(seatDiv, index, table.capacity, table.shape);
         });
+<<<<<<< Updated upstream
         
         // 3. Wypełnienie pustej przestrzeni i dodanie kolumn do stołu
         if (isRect) {
@@ -788,12 +864,17 @@ function renderTables() {
         
         wrapper.appendChild(buttonContainer);
         container.appendChild(wrapper);
+=======
+        const deleteButton = document.createElement("button"); deleteButton.className = "remove-table-btn"; deleteButton.textContent = "Usuń"; deleteButton.onclick = () => confirmRemoveTable(table.id);
+        wrapper.appendChild(tableDiv); wrapper.appendChild(deleteButton); container.appendChild(wrapper);
+>>>>>>> Stashed changes
     });
 }
 
 function confirmRemoveTable(tableId) {
     confirmAction('Czy na pewno chcesz usunąć ten stół?', async () => {
         const formData = new FormData(); formData.append('action', 'delete_table'); formData.append('table_id', tableId);
+<<<<<<< Updated upstream
         const response = await fetch('index.php', { method: 'POST', body: formData });
         const result = await response.json();
         if (result.success) await renderAll(); else alert(result.message);
@@ -809,13 +890,35 @@ function confirmClearTable(tableId, tableName) {
         const result = await response.json();
         if (result.success) await renderAll(); 
         else alert(result.message);
+=======
+        const response = await fetch('index.php', { method: 'POST', body: formData });
+        const result = await response.json();
+        if (result.success) await renderAll(); else alert(result.message);
+>>>>>>> Stashed changes
     });
 }
 
 
 function positionSeat(seatDiv, index, capacity, shape) {
+<<<<<<< Updated upstream
     // FUNKCJA ZASLEPKA: Flexbox w CSS obsługuje teraz układ, 
     // aby zachować czytelność długich nazw.
+=======
+    const seatSize = 70; const seatOffset = `-${seatSize / 2}px`;
+    if (shape === "round") {
+        const angle = (index / capacity) * 2 * Math.PI; const radius = 160; 
+        const translateX = Math.cos(angle) * radius - (seatSize / 2); const translateY = Math.sin(angle) * radius - (seatSize / 2);
+        seatDiv.style.transform = `translate(${translateX}px, ${translateY}px)`;
+    } else {
+        const seatsOnTop = Math.ceil(capacity / 2); const seatsOnBottom = capacity - seatsOnTop; const side = index < seatsOnTop ? "top" : "bottom";
+        if (side === "top") {
+            const posOnSide = index; seatDiv.style.left = `${(100 / (seatsOnTop + 1)) * (posOnSide + 1)}%`; seatDiv.style.top = seatOffset;
+        } else {
+            const posOnSide = index - seatsOnTop; seatDiv.style.left = `${(100 / (seatsOnBottom + 1)) * (posOnSide + 1)}%`; seatDiv.style.bottom = seatOffset;
+        }
+        seatDiv.style.transform = 'translateX(-50%)';
+    }
+>>>>>>> Stashed changes
 }
 
 function renderUnassignedGuests() {
@@ -825,6 +928,7 @@ function renderUnassignedGuests() {
     pool.innerHTML = "<h3>Goście do usadzenia</h3>";
     const assignedPeopleIds = new Set(tables.flatMap(t => t.seats.filter(s => s.person_id).map(s => `${s.person_type}-${s.person_id}`)));
     
+<<<<<<< Updated upstream
     // ZMIANA: Filtr musi być teraz na 'rsvp_status' === 'confirmed'
     guests.filter(g => g.rsvp_status === 'confirmed' && (parseInt(g.confirmed_adults) > 0 || parseInt(g.confirmed_children) > 0)).forEach(family => {
         
@@ -849,6 +953,14 @@ function renderUnassignedGuests() {
                 if (!assignedPeopleIds.has(`child-${child.id}`)) { 
                     pool.appendChild(createDraggablePerson(child.id, `child`, child.child_name)); 
                 }
+=======
+    guests.filter(g => parseInt(g.confirmed) === 1).forEach(family => {
+        if (family.guest1_name && !assignedPeopleIds.has(`guest1-${family.id}`)) { pool.appendChild(createDraggablePerson(family.id, "guest1", family.guest1_name)); }
+        if (family.guest2_name && !assignedPeopleIds.has(`guest2-${family.id}`)) { pool.appendChild(createDraggablePerson(family.id, "guest2", family.guest2_name)); }
+        if (family.children) {
+            family.children.forEach((child) => {
+                if (!assignedPeopleIds.has(`child-${child.id}`)) { pool.appendChild(createDraggablePerson(child.id, `child`, child.child_name)); }
+>>>>>>> Stashed changes
             });
         }
     });
@@ -898,6 +1010,7 @@ function unassignPersonFromSeat(seatId, personName) {
 
 function openModal(modalId, recordId) {
     if (modalId === "edit-guest-modal") {
+<<<<<<< Updated upstream
         const guest = guests.find(g => g.id == recordId); 
         if (!guest) return;
         
@@ -914,6 +1027,11 @@ function openModal(modalId, recordId) {
         const childrenContainer = document.getElementById("edit-children-inputs"); 
         if(childrenContainer) childrenContainer.innerHTML = "";
         
+=======
+        const guest = guests.find(g => g.id == recordId); if (!guest) return;
+        document.getElementById("editGuestId").value = guest.id; document.getElementById("editGuest1Name").value = guest.guest1_name; document.getElementById("editGuest2Name").value = guest.guest2_name;
+        const childrenContainer = document.getElementById("edit-children-inputs"); childrenContainer.innerHTML = "";
+>>>>>>> Stashed changes
         if(guest.children) {
             guest.children.forEach(child => {
                 const div = document.createElement("div"); const namePrefix = 'editChild';
@@ -922,6 +1040,7 @@ function openModal(modalId, recordId) {
             });
         }
     } else if (modalId === "edit-vendor-modal") {
+<<<<<<< Updated upstream
         const vendor = vendors.find(v => v.id == recordId); 
         if (!vendor) return;
         
@@ -938,6 +1057,11 @@ function openModal(modalId, recordId) {
         const paymentDateEl = document.getElementById("editVendorPaymentDate");
         if (paymentDateEl) paymentDateEl.value = vendor.payment_date;
 
+=======
+        const vendor = vendors.find(v => v.id == recordId); if (!vendor) return;
+        document.getElementById("editVendorId").value = vendor.id; document.getElementById("editVendorName").value = vendor.name; document.getElementById("editVendorCost").value = vendor.cost;
+        document.getElementById("editVendorDeposit").value = vendor.deposit; document.getElementById("editVendorPaymentDate").value = vendor.payment_date; document.getElementById("editVendorPaidFull").checked = parseInt(vendor.paid_full) === 1;
+>>>>>>> Stashed changes
     }
     // Upewnij się, że element modalny istnieje
     const modalEl = document.getElementById(modalId);
@@ -978,7 +1102,10 @@ function removeUserAccess(userId, userEmail) {
     }
 }
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 function exportToPDF() {
     if (typeof jsPDF === 'undefined' || typeof jsPDF.API.autoTable === 'undefined') { alert('Biblioteka PDF nie jest jeszcze gotowa.'); return; }
     const { jsPDF: JSPDF } = window; const doc = new JSPDF(); const weddingDate = document.getElementById("weddingDate").value || "Nie ustawiono";
@@ -991,6 +1118,7 @@ function exportToPDF() {
         if (g.children) { g.children.forEach(c => guestBody.push([c.child_name, `Dziecko (${c.age} lat)`, isConfirmed ? "Tak" : "Nie", needsAccommodation ? "Tak" : "Nie"]));}
     });
     doc.autoTable({ head: [["Imie i Nazwisko", "Typ", "Obecnosc", "Nocleg"]], body: guestBody, startY: 30, headStyles: { fillColor: [74, 20, 140] } });
+<<<<<<< Updated upstream
     
     // ZMIANA: Eksport budżetu z nowymi danymi
     const vendorBody = vendors.map(v => [ 
@@ -1002,6 +1130,10 @@ function exportToPDF() {
     ]);
     doc.autoTable({ head: [["Usluga", "Koszt (PLN)", "Zapłacono (PLN)", "Opłacone w całości", "Termin"]], body: vendorBody, startY: doc.autoTable.previous.finalY + 10, headStyles: { fillColor: [74, 20, 140] } });
     
+=======
+    const vendorBody = vendors.map(v => [ v.name, parseFloat(v.cost).toFixed(2), parseFloat(v.deposit).toFixed(2), parseInt(v.paid_full) === 1 ? "Tak" : "Nie" ]);
+    doc.autoTable({ head: [["Usluga", "Koszt (PLN)", "Zaliczka (PLN)", "Oplacone"]], body: vendorBody, startY: doc.autoTable.previous.finalY + 10, headStyles: { fillColor: [74, 20, 140] } });
+>>>>>>> Stashed changes
     const seatingBody = [];
     tables.forEach(table => {
         seatingBody.push([{ content: `${table.name} (${table.shape}, ${table.capacity} os.)`, colSpan: 2, styles: { fontStyle: "bold", fillColor: "#f3e5f5" } }]);
@@ -1021,6 +1153,7 @@ function exportToExcel() {
         if (g.children) { g.children.forEach(c => guestData.push({ Grupa: groupName, Imię: c.child_name, Typ: `Dziecko (${c.age} lat)`, Potwierdzenie: isConfirmed ? "Tak" : "Nie", Nocleg_osoby: parseInt(g.accommodation) })); }
     });
     const guestWS = XLSX.utils.json_to_sheet(guestData);
+<<<<<<< Updated upstream
     
     // ZMIANA: Eksport budżetu z nowymi danymi
     const budgetData = vendors.map(v => ({ 
@@ -1032,6 +1165,10 @@ function exportToExcel() {
     }));
     const budgetWS = XLSX.utils.json_to_sheet(budgetData);
     
+=======
+    const budgetData = vendors.map(v => ({ 'Usługa': v.name, 'Koszt (PLN)': parseFloat(v.cost), 'Zaliczka (PLN)': parseFloat(v.deposit), 'Opłacone w całości': parseInt(v.paid_full) === 1 ? 'Tak' : 'Nie', 'Termin płatności': v.payment_date }));
+    const budgetWS = XLSX.utils.json_to_sheet(budgetData);
+>>>>>>> Stashed changes
     const seatingData = [];
     tables.forEach(table => {
         seatingData.push({ "Stół / Miejsce": table.name, "Gość": `(${table.shape}, ${table.capacity} miejsc)` });
@@ -1055,3 +1192,33 @@ function importDataFromFile(event) {
     alert("Importowanie danych z pliku wymaga zaawansowanej logiki po stronie serwera i nie jest w pełni zaimplementowane w tej wersji.");
     event.target.value = '';
 }
+<<<<<<< Updated upstream
+=======
+
+function renderBudgetItems() {
+  const list = document.getElementById('budgetItemsList');
+  if (!list) return;
+  list.innerHTML = '';
+  budgetItems.forEach(it => {
+    const li = document.createElement('li');
+    li.className = 'price-item';
+    li.innerHTML = `
+      <span><strong>${it.label}</strong> — ${parseFloat(it.unit_price).toFixed(2)} PLN / dorosły</span>
+      <div>
+        <button type="button" class="secondary" onclick="confirmRemoveBudgetItem(${it.id})">Usuń</button>
+      </div>`;
+    list.appendChild(li);
+  });
+}
+
+async function confirmRemoveBudgetItem(id) {
+  confirmAction('Usunąć tę pozycję cennika?', async () => {
+    const fd = new FormData();
+    fd.append('action', 'delete_budget_item');
+    fd.append('id', id);
+    const res = await fetch('index.php', { method: 'POST', body: fd });
+    const out = await res.json();
+    if (out.success) await renderAll(); else alert(out.message || 'Błąd usuwania');
+  });
+}
+>>>>>>> Stashed changes

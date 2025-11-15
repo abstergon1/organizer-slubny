@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-/* css/style.css (WERSJA Z POPRAWIONYMI FORMULARZAMI LOGOWANIA i NOWYM PLANEM STOŁÓW) */
-=======
-/* css/style.css (WERSJA Z POPRAWIONYMI FORMULARZAMI LOGOWANIA) */
->>>>>>> Stashed changes
-
 /* --- ZMIENNE GLOBALNE I RESET --- */
 :root {
     --primary-color: #4a148c;   /* Głęboki fiolet */
@@ -15,14 +9,6 @@
     --border-color: #ddd;
     --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     --light-bg-color: #f3e5f5; 
-    
-    /* NOWE ZMIENNE DLA PLANU STOŁÓW */
-    --table-bg-color: #f6e8fb; /* Jasny kolor tła stołu z obrazka */
-    --table-border-color: #9c27b0; /* Kolor ramki z obrazka */
-    --seat-default-bg: #d0d2e8; /* Jasny fiolet/szary dla pustego miejsca */
-    --seat-adult-bg: #6200EE; /* Głęboki Fiolet dla Dorosłych */
-    --seat-child-bg: #9c27b0; /* Magenta dla Dzieci */
-    --seat-default-text: #333; 
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,47 +28,14 @@ section { background-color: white; margin: 20px 0; padding: 25px; border-radius:
 h2 { color: var(--primary-color); border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
 h3 { margin-top: 20px; margin-bottom: 10px; color: var(--secondary-color); }
 
-<<<<<<< Updated upstream
 /* --- ELEMENTY FORMULARZY --- */
-input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], select, textarea { 
-=======
-/* --- ELEMENTY FORMULARZY (POPRAWIONE SELEKTORY) --- */
-/* POPRAWKA 1: Dodano input[type="email"], input[type="password"] do listy */
-input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], select { 
->>>>>>> Stashed changes
-    width: 100%; 
-    padding: 12px; 
-    margin: 5px 0 10px 0; 
-    border: 1px solid var(--border-color); 
-    border-radius: 4px; 
-    font-size: 1em; 
-}
-<<<<<<< Updated upstream
-=======
-
-/* POPRAWKA 2: Uogólniono selektor dla etykiet, aby działał też na stronach logowania */
->>>>>>> Stashed changes
-section label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-}
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
+input[type="text"], input[type="number"], input[type="date"], select { width: 100%; padding: 12px; margin: 5px 0 10px 0; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; }
 button { padding: 12px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s, transform 0.2s; }
 button:hover { background-color: var(--primary-color); transform: translateY(-1px); }
 button.secondary { background-color: #aaa; }
 button.secondary:hover { background-color: #888; }
 .remove-child-btn { background: #f44336; padding: 5px 10px; font-size: 0.8em; color: white; border-radius: 50%; width: 30px; height: 30px; }
-<<<<<<< Updated upstream
-=======
 .checkbox-label { display: flex; align-items: center; gap: 8px; }
-/* Zapewnia, że ogólna reguła dla label nie zepsuje checkboxów */
->>>>>>> Stashed changes
-.checkbox-label { display: flex; align-items: center; gap: 8px; margin-top: 0; font-weight: normal; }
-
 
 /* --- SEKCJA: PULPIT --- */
 .dashboard-hero { background: linear-gradient(rgba(74, 20, 140, 0.7), rgba(123, 31, 162, 0.7)), url('https://images.unsplash.com/photo-1523438097201-512ae7d59c44?q=80&w=2070&auto=format&fit=crop') no-repeat center center; background-size: cover; padding: 60px 20px; border-radius: 8px; text-align: center; color: white; }
@@ -95,19 +48,13 @@ button.secondary:hover { background-color: #888; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; animation: fadeIn 0.3s; }
 .modal-content { background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; animation: slideIn 0.3s; }
 @keyframes slideIn { from { transform: translateY(-50px); } to { transform: translateY(0); } }
+.modal-content label { display: block; margin-top: 15px; font-weight: bold; }
 .modal-actions { margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px; }
+#local-data-info p { margin-bottom: 5px; }
+#local-data-info strong { color: var(--primary-color); }
 .import-prompt { margin-top: 20px; font-style: italic; color: #666; text-align: center; }
 
-<<<<<<< Updated upstream
-/* --- SEKCJA: ZADANIA I KALENDARZ (bez zmian) --- */
-=======
-/* --- STRONY LOGOWANIA I REJESTRACJI --- */
-body.auth-page { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f9f9f9; }
-.auth-container { width: 100%; max-width: 400px; }
-
-
 /* --- SEKCJA: ZADANIA I KALENDARZ --- */
->>>>>>> Stashed changes
 #tasks-section .task-input { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } #tasks-section .task-input input { flex: 1; min-width: 150px; } #tasks-section .task-input button { flex-shrink: 0; } #taskList { list-style: none; } 
 #taskList li { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; } 
 #taskList li.completed span { text-decoration: line-through; color: #888; } 
@@ -118,32 +65,10 @@ body.auth-page { display: flex; justify-content: center; align-items: center; he
 .task-on-calendar.payment { background-color: var(--payment-color); }
 .task-on-calendar.completed { background-color: var(--success-color); text-decoration: line-through;}
 
-/* --- SEKCJA: GOŚCIE (bez zmian) --- */
+/* --- SEKCJA: GOŚCIE --- */
 .guest-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; } .guest-form p { grid-column: 1 / -1; margin: 10px 0 0 0; font-weight: bold; } #children-inputs div, #edit-children-inputs div { display: flex; gap: 10px; align-items: center; margin-bottom: 5px; } .guest-filters { margin: 20px 0; display: flex; gap: 10px; align-items: center; } .filter-btn { background-color: #eee; color: #333; } .filter-btn.active { background-color: var(--secondary-color); color: white; } #guestTable { width: 100%; border-collapse: collapse; margin-top: 20px; } #guestTable th, #guestTable td { border: 1px solid var(--border-color); padding: 12px; text-align: left; } #guestTable th { background-color: var(--light-bg-color); } #guestTable tfoot td { font-weight: bold; background-color: var(--light-bg-color); }
-.status-badge { display: inline-block; padding: 5px 10px; border-radius: 5px; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
-.status-unconfirmed { background-color: var(--accent-color); color: var(--text-color); }
-.status-pending { background-color: var(--payment-color); color: white; }
-.status-confirmed { background-color: var(--success-color); color: white; }
-/* NOWY STYL DLA PRZYCISKU UWAG */
-.notes-btn {
-    background-color: #ff9800; /* Pomarańczowy */
-    color: white;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 0.8em;
-    margin-left: 10px;
-    vertical-align: middle;
-}
-.notes-btn:hover {
-    background-color: #f57c00;
-}
 
-.status-rejected { 
-    background-color: #f44336; /* Czerwony */ 
-    color: white; 
-}
-
-/* --- SEKCJA: BUDŻET (bez zmian) --- */
+/* --- SEKCJA: BUDŻET --- */
 .price-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px; padding: 10px; border: 1px solid #eee; border-radius: 4px; }
 .price-item label { flex-shrink: 0; font-weight: bold; }
 .price-item input { max-width: 150px; }
@@ -155,13 +80,11 @@ body.auth-page { display: flex; justify-content: center; align-items: center; he
 .budget-summary p { font-size: 1.1em; margin: 5px 0; }
 .budget-summary strong { color: var(--primary-color); }
 
-/* --- SEKCJA: PLAN STOŁÓW (WIZUALIZACJA ZGODNA Z REFERENCJĄ) --- */
+/* --- SEKCJA: PLAN STOŁÓW --- */
 .table-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; } 
 .seating-area { display: flex; flex-direction: column; gap: 20px; } 
-<<<<<<< Updated upstream
-.guest-pool { width: 100%; min-height: auto; max-height: 250px; overflow-y: auto; background: #f9f9f9; border: 2px dashed #ccc; padding: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-start; }
-=======
 .guest-pool { width: 100%; min-height: auto; max-height: 250px; overflow-y: auto; background: #f9f9f9; border: 2px dashed #ccc; padding: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+/* ZMIANA: Zwiększono przerwę między stołami */
 #tables-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 100px; min-height: 400px; padding: 20px 0; } 
 .table-wrapper { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; width: 100%; }
 .table-representation { flex-shrink: 0; border: 3px solid var(--secondary-color); background: var(--light-bg-color); position: relative; display: flex; justify-content: center; align-items: center; color: var(--primary-color); font-weight: bold; text-align: center; } 
@@ -173,154 +96,8 @@ body.auth-page { display: flex; justify-content: center; align-items: center; he
 .seat.occupied { background: var(--secondary-color); color: white; cursor: grab; } 
 .seat[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 5px 10px; border-radius: 5px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 10; } 
 .seat[data-tooltip]:hover::after { opacity: 1; visibility: visible; z-index: 20; } 
->>>>>>> Stashed changes
 .guest-item { background-color: var(--accent-color); padding: 8px 15px; margin: 5px; border-radius: 20px; cursor: grab; user-select: none; text-align: center; }
-
-#tables-container { 
-    width: 100%; 
-    display: flex; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 50px; 
-    padding: 20px 0; 
-} 
-.table-wrapper { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    gap: 10px; 
-    width: 300px; /* Wąska szerokość dla stołu, jak na obrazku */
-    flex-shrink: 0;
-}
-.table-wrapper button { /* Układ przycisków */
-    font-size: 0.9em;
-    width: 100%;
-}
-.table-wrapper > div:last-child { /* Kontener przycisków */
-    width: 300px; /* Dopasowanie szerokości do stołu */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-}
-.clear-table-btn { 
-    background-color: #6200EE; 
-    padding: 10px 20px;
-}
-.remove-table-btn { 
-    background-color: #9c27b0; 
-    padding: 10px 20px;
-}
-.clear-table-btn:hover { background-color: #5500dd; }
-.remove-table-btn:hover { background-color: #8b23a0; }
-
-
-.table-representation { 
-    border: 3px solid var(--table-border-color); 
-    background: var(--table-bg-color); /* Jasny kolor tła */
-    border-radius: 10px;
-    position: relative; 
-    display: flex; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    align-items: center; 
-    color: var(--seat-default-text); 
-    font-weight: bold; 
-    text-align: center; 
-    width: 100%; 
-    padding: 0;
-    min-height: 400px; /* Wystarczająca wysokość dla pionowej siatki */
-} 
-.table-representation span { /* Nazwa stołu (ABSOLUTNA) */
-    position: absolute; 
-    top: 0; 
-    left: 50%;
-    transform: translateX(-50%);
-    
-    background: var(--primary-color); /* Głęboki fiolet */
-    color: white;
-    padding: 10px 15px;
-    margin: 0; 
-    border-bottom-left-radius: 10px; 
-    border-bottom-right-radius: 10px; 
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    
-    font-size: 1em; 
-    z-index: 10; 
-    pointer-events: none; 
-}
-
-/* NOWE STYLISTYKA MIEJSC */
-.seat { 
-    width: 130px; /* Ustalona szerokość */
-    height: 50px; 
-    background: var(--seat-default-bg); 
-    border: 1px solid var(--table-border-color); 
-    border-radius: 5px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    font-size: 0.85em; 
-    text-align: center; 
-    overflow: hidden; 
-    cursor: pointer; 
-    transition: all 0.2s; 
-    padding: 5px;
-    margin: 5px; 
-    z-index: 1;
-    flex-shrink: 0;
-} 
-.seat:hover { 
-    transform: scale(1.05); 
-} 
-.seat.occupied { 
-    color: white; 
-    cursor: grab; 
-    border-color: rgba(255, 255, 255, 0.4);
-} 
-
-/* KOLORY DLA MIEJSC */
-.seat.seat-adult {
-    background: var(--seat-adult-bg); 
-}
-.seat.seat-child {
-    background: var(--seat-child-bg); 
-    border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-/* UKŁAD DLA STOŁÓW PROSTOKĄTNYCH (PIONOWY) */
-.table-representation.rect { 
-    display: grid;
-    grid-template-columns: auto 1fr auto; /* 3 kolumny: miejsca lewe, stół, miejsca prawe */
-    grid-gap: 0; 
-    padding-top: 40px; /* Odstęp na nazwę stołu */
-}
-.table-seats-column {
-    display: flex;
-    flex-direction: column; 
-    justify-content: space-evenly; 
-    align-items: center;
-    width: 100%;
-    align-self: center;
-    justify-self: center;
-}
-.seat-spacer { /* Do wyrównania kolumn */
-    height: 50px;
-    margin: 5px;
-}
-
-/* UKŁAD DLA STOŁÓW OKRĄGŁYCH (ELASTYCZNA SIATKA) */
-.table-representation.round { 
-    border-radius: 50%; 
-    width: 320px; 
-    height: 320px; 
-    padding: 20px;
-    justify-content: space-around; 
-    align-content: space-around; 
-    /* W kołach miejsca lądują w głównym kontenerze Flex (leftColumn), więc nadpisujemy display */
-    display: flex;
-} 
+.remove-table-btn { background-color: #f44336; font-size: 0.8em; padding: 5px 10px; }
 
 /* --- SEKCJA: EKSPORT --- */
 .export-buttons { display: flex; gap: 15px; margin-top: 20px; }

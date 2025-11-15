@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 CREATE DATABASE IF NOT EXISTS wedding_organizer;
 USE wedding_organizer;
 
@@ -132,3 +133,19 @@ CREATE TABLE settings (
 );
 
 
+=======
+-- sql_schema.sql
+CREATE DATABASE IF NOT EXISTS wedding_organizer;
+USE wedding_organizer;
+DROP TABLE IF EXISTS table_seats, tables, children, guests, tasks, vendors, settings, organizer_users, organizers, users;
+CREATE TABLE users ( id INT AUTO_INCREMENT PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, is_admin BOOLEAN NOT NULL DEFAULT FALSE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE organizers ( id INT AUTO_INCREMENT PRIMARY KEY, owner_user_id INT NOT NULL, organizer_name VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE organizer_users ( id INT AUTO_INCREMENT PRIMARY KEY, organizer_id INT NOT NULL, user_id INT NOT NULL, permission_level ENUM('owner', 'editor', 'viewer') NOT NULL DEFAULT 'viewer', FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, UNIQUE KEY (organizer_id, user_id) ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE tasks ( id INT AUTO_INCREMENT PRIMARY KEY, organizer_id INT NOT NULL, name VARCHAR(255) NOT NULL, date DATE NOT NULL, owner VARCHAR(100), completed BOOLEAN DEFAULT FALSE, completion_date DATE, is_payment_task BOOLEAN DEFAULT FALSE, vendor_id INT, FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE guests ( id INT AUTO_INCREMENT PRIMARY KEY, organizer_id INT NOT NULL, guest1_name VARCHAR(255), guest2_name VARCHAR(255), confirmed BOOLEAN DEFAULT FALSE, accommodation INT DEFAULT 0, FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE children ( id INT AUTO_INCREMENT PRIMARY KEY, guest_group_id INT NOT NULL, child_name VARCHAR(255) NOT NULL, age INT DEFAULT 0, FOREIGN KEY (guest_group_id) REFERENCES guests(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE vendors ( id INT AUTO_INCREMENT PRIMARY KEY, organizer_id INT NOT NULL, name VARCHAR(255) NOT NULL, cost DECIMAL(10, 2) NOT NULL, deposit DECIMAL(10, 2) DEFAULT 0.00, paid_full BOOLEAN DEFAULT FALSE, payment_date DATE, FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE tables ( id INT AUTO_INCREMENT PRIMARY KEY, organizer_id INT NOT NULL, name VARCHAR(255) NOT NULL, capacity INT NOT NULL, shape ENUM('rect', 'round') DEFAULT 'rect', FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE table_seats ( id INT AUTO_INCREMENT PRIMARY KEY, table_id INT NOT NULL, seat_index INT NOT NULL, person_type ENUM('guest1', 'guest2', 'child') DEFAULT NULL, person_id INT DEFAULT NULL, FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE TABLE settings ( id INT AUTO_INCREMENT PRIMARY KEY, organizer_id INT NOT NULL, setting_key VARCHAR(255) NOT NULL, setting_value TEXT, UNIQUE KEY (organizer_id, setting_key), FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+>>>>>>> Stashed changes
