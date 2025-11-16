@@ -32,18 +32,23 @@
         </div>
     </div>
 
-    <!-- MODAL DO EDYCJI KOSZTÓW (ZMIANA) -->
-    <div id="edit-vendor-modal" class="modal-overlay">
-    <div class="modal-content">
-        <form class="ajax-form">
-            <h2>Edytuj Koszt Usługodawcy</h2>
-            <input type="hidden" name="action" value="edit_vendor">
-            <input type="hidden" id="editVendorId" name="editVendorId"> <!-- POTRZEBNE -->
-            <label>Nazwa usługi</label><input type="text" id="editVendorName" name="editVendorName"> <!-- POTRZEBNE -->
-            <label>Całkowity koszt</label><input type="number" id="editVendorCost" name="editVendorCost" min="0" step="0.01"> <!-- POTRZEBNE -->
-            <!-- USUNIĘTO: Zapłacona zaliczka i Opłacone w całości -->
-            <label>Data płatności</label><input type="date" id="editVendorPaymentDate" name="editVendorPaymentDate"> <!-- POTRZEBNE -->
-            <div class="modal-actions">
+<div id="edit-vendor-modal" class="modal-overlay">
+        <div class="modal-content">
+            <form class="ajax-form">
+                <h2>Edytuj Koszt Usługodawcy</h2>
+                <input type="hidden" name="action" value="edit_vendor">
+                <input type="hidden" id="editVendorId" name="editVendorId"> 
+                
+                <label for="editVendorCategory">Kategoria:</label> <!-- NOWE POLE -->
+                <select id="editVendorCategory" name="editVendorCategory" required>
+                    <option value="0">Wybierz kategorię...</option>
+                    <!-- Opcje będą renderowane dynamicznie przez JS -->
+                </select>
+
+                <label>Nazwa usługi</label><input type="text" id="editVendorName" name="editVendorName"> 
+                <label>Całkowity koszt</label><input type="number" id="editVendorCost" name="editVendorCost" min="0" step="0.01"> 
+                <label>Data płatności</label><input type="date" id="editVendorPaymentDate" name="editVendorPaymentDate"> 
+                <div class="modal-actions">
                     <button type="submit">Zapisz Zmiany</button>
                     <button type="button" class="secondary" onclick="closeModal('edit-vendor-modal')">Anuluj</button>
                 </div>
@@ -116,20 +121,35 @@
         <?php if ($organizer_id): ?>
             <!-- Strona 1: Pulpit (bez zmian) -->
             <div id="dashboard" class="page active">
-                <section class="dashboard-hero">
-                    <div class="dashboard-content">
-                        <h2>Nasza Data Ślubu</h2>
-                        <form class="date-setter ajax-form">
-                            <input type="hidden" name="action" value="save_wedding_date">
-                            <input type="date" id="weddingDate" name="wedding_date" title="Ustaw datę ślubu" value="<?php echo htmlspecialchars($settings['wedding_date'] ?? ''); ?>">
-                            <button type="submit">Zapisz Datę</button>
-                        </form>
-                        <div id="countdown-container">
-                            <div id="countdown">Ustaw datę, aby rozpocząć odliczanie.</div>
-                        </div>
-                    </div>
-                </section>
+    <section class="dashboard-hero">
+        <div class="dashboard-content">
+            <h2>Nasza Data Ślubu</h2>
+            <form class="date-setter ajax-form">
+                <input type="hidden" name="action" value="save_wedding_date">
+                
+                <!-- ZMIANA 1: DATA ŚLUBU Z GODZINĄ -->
+                <input type="date" id="weddingDate" name="wedding_date" title="Ustaw datę ślubu" value="<?php echo htmlspecialchars($settings['wedding_date'] ?? ''); ?>">
+                <input type="time" id="weddingTime" name="wedding_time" title="Ustaw godzinę ślubu" value="<?php echo htmlspecialchars($settings['wedding_time'] ?? '16:00'); ?>">
+                
+                <button type="submit">Zapisz Datę</button>
+            </form>
+            <div id="countdown-container">
+                <div id="countdown">Ustaw datę, aby rozpocząć odliczanie.</div>
             </div>
+            
+            <!-- NOWA SEKCJA: TERMIN RSVP -->
+            <h3 style="color: white; margin-top: 25px;">Termin RSVP</h3>
+            <form class="date-setter ajax-form">
+                <input type="hidden" name="action" value="save_rsvp_date"> <!-- NOWA AKCJA -->
+                <input type="date" id="rsvpDeadlineDate" name="rsvp_deadline_date" title="Ustaw datę odpowiedzi" value="<?php echo htmlspecialchars($settings['rsvp_deadline_date'] ?? ''); ?>">
+                <button type="submit">Zapisz Termin</button>
+            </form>
+            <div id="rsvp-countdown-container" style="margin-top: 10px;">
+                <div id="rsvpCountdown" style="font-size: 1.5em; font-weight: bold;">Ustaw datę odpowiedzi.</div>
+            </div>
+        </div>
+    </section>
+</div>
 
             <!-- Strona 2: Zadania (bez zmian) -->
             <div id="tasks" class="page">
@@ -153,6 +173,19 @@
                     <div id="calendar-view"></div>
                 </section>
             </div>
+			
+			<div id="day-details-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 id="dayDetailsDate">Zadania na dzień: [Data]</h2>
+        <ul id="dayDetailsList" style="list-style: none; padding: 0;">
+            <!-- SZCZEGÓŁY ZADAŃ BĘDĄ RENDEROWANE TUTAJ -->
+        </ul>
+        <div class="modal-actions">
+            <button type="button" class="secondary" onclick="closeModal('day-details-modal')">Zamknij</button>
+            <button type="button" onclick="openAddTaskModal()">+ Dodaj Zadanie</button> <!-- NOWY PRZYCISK -->
+        </div>
+    </div>
+</div>
 
             <!-- Strona 3: Goście (bez zmian) -->
             <div id="guests" class="page">
@@ -191,10 +224,24 @@
             </div>
             
             <!-- Strona 4: Budżet (ZMIANA) -->
-            <!-- views/dashboard.php (fragment Strona 4: Budżet) -->
+
 <div id="budget" class="page">
     <section id="budget-section">
         <h2>Budżet i Koszty</h2>
+        
+        <!-- NOWA SEKCJA: Zarządzanie Kategoriami -->
+        <div class="category-manager" style="margin-bottom: 25px; padding: 15px; border: 1px solid var(--accent-color); border-radius: 5px;">
+            <h3>Zarządzanie Kategoriami Usługodawców</h3>
+            <form class="category-form ajax-form" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <input type="hidden" name="action" value="add_vendor_category">
+                <input type="text" id="categoryName" name="categoryName" placeholder="Nowa kategoria (np. Sala, Fotograf)" required style="flex-grow: 1;">
+                <button type="submit">Dodaj Kategorię</button>
+            </form>
+            <ul id="categoryList" style="list-style: none; margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                <!-- KATEGORIE BĘDĄ RENDEROWANE TUTAJ PRZEZ JS -->
+            </ul>
+        </div>
+        
         <form class="ajax-form">
             <input type="hidden" name="action" value="save_wedding_date">
             <div class="budget-setup">
@@ -235,33 +282,72 @@
                 <button type="submit" style="margin-top: 10px;">Zapisz Cennik</button>
             </div>
         </form>
-<!-- ... -->
-                    
-                    <div class="vendor-costs">
-                        <h3>Koszty Usługodawców</h3>
-                        <form class="vendor-form ajax-form">
-                            <input type="hidden" name="action" value="add_vendor">
-                            <input type="text" id="vendorName" name="vendorName" placeholder="Usługa (np. DJ, Fotograf)" required>
-                            <input type="number" id="vendorCost" name="vendorCost" placeholder="Całkowity koszt" min="0" step="0.01" required>
-                            <!-- ZMIANA: Pole zaliczki jest teraz OPCJONALNE, rejestruje pierwszą płatność -->
-                            <input type="number" id="vendorDeposit" name="vendorDeposit" placeholder="Pierwsza płatność (opcjonalnie)" min="0" step="0.01">
-                            <input type="date" id="vendorPaymentDate" name="vendorPaymentDate" title="Data końcowej płatności (zadanie)">
-                            <button type="submit">Dodaj Koszt</button>
-                        </form>
-                        <ul id="vendorList"></ul>
-                    </div>
-                    <div class="budget-summary">
-                        <h3>Podsumowanie Kosztów</h3>
-                        <p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span> PLN</p>
-                        <p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span> PLN</p>
-                        <p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span> PLN</p><hr>
-                        <p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span> PLN</strong></p>
-                        <p><strong>Suma wpłat: <span id="totalPaid">0.00</span> PLN</strong></p>
-                        <p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span> PLN</strong></p>
-                    </div>
-                </section>
-            </div>
 
+        <div class="vendor-costs">
+            <h3>Koszty Usługodawców</h3>
+            <form class="vendor-form ajax-form">
+                <input type="hidden" name="action" value="add_vendor">
+                
+                <label for="vendorCategory">Kategoria:</label> <!-- NOWE POLE -->
+                <select id="vendorCategory" name="vendorCategory" required>
+                    <option value="0">Wybierz kategorię...</option>
+                    <!-- Opcje będą renderowane dynamicznie przez JS -->
+                </select>
+                
+                <input type="text" id="vendorName" name="vendorName" placeholder="Usługa (np. DJ, Fotograf)" required>
+                <input type="number" id="vendorCost" name="vendorCost" placeholder="Całkowity koszt" min="0" step="0.01" required>
+                <input type="number" id="vendorDeposit" name="vendorDeposit" placeholder="Pierwsza płatność (opcjonalnie)" min="0" step="0.01">
+                <input type="date" id="vendorPaymentDate" name="vendorPaymentDate" title="Data końcowej płatności (zadanie)">
+                <button type="submit">Dodaj Koszt</button>
+            </form>
+
+            
+			<!-- TABELA KOSZTÓW -->
+            <table id="vendorTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Usługa / Kategoria</th>
+                        <th style="width: 10%;">Koszt</th>
+                        <th style="width: 10%;">Zapłacono</th>
+                        <th style="width: 10%;">Pozostało</th>
+                        <th style="width: 15%;">Termin</th>
+                        <th style="width: 20%;">Postęp/raty po kliknięciu</th>
+                        <th style="width: 10%;">Akcje</th> <!-- NOWA KOLUMNA DLA AKCJI -->
+                    </tr>
+                </thead>
+                <tbody id="vendorTableBody">
+                    <!-- POZYCJE BĘDĄ RENDEROWANE TUTAJ PRZEZ JS -->
+                </tbody>
+            </table>
+     
+<div class="budget-summary">
+			<!-- USUNIĘTO " PLN" Z KAŻDEJ LINII -->
+			<p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span></p>
+			<p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span></p>
+			<p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span></p><hr>
+			<p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span></strong></p>
+			<p><strong>Suma wpłat: <span id="totalPaid">0.00</span></strong></p>
+			<p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span></strong></p>
+		</div>
+
+    </section>
+</div>
+
+
+<!-- DODATKOWY MODAL DLA SZCZEGÓŁÓW PŁATNOŚCI (MODAL MUSI BYĆ NA GŁÓWNYM POZIOMIE BODY, ZA MODALAMI) -->
+<div id="vendor-payments-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 id="paymentsModalVendorName">Płatności dla: [Nazwa Dostawcy]</h2>
+        <div id="paymentsDetails" style="max-height: 400px; overflow-y: auto;">
+            <!-- SZCZEGÓŁY RAT BĘDĄ RENDEROWANE TUTAJ -->
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="secondary" onclick="closeModal('vendor-payments-modal')">Zamknij</button>
+        </div>
+    </div>
+</div>	
+		
+		
             <!-- Strona 5: Plan Stołów (bez zmian) -->
             <div id="seating" class="page">
                 <section id="seating-section">
@@ -285,14 +371,14 @@
             
             <!-- Strona 6: Eksport (bez zmian) -->
             <div id="export" class="page">
-                <section id="export-section">
-                    <h2>Raporty</h2>
-                    <p>Wygeneruj raporty z listą gości, budżetem i planem stołów do formatu PDF lub Excel.</p>
-                    <div class="export-buttons">
-                        <button type="button" onclick="exportToPDF()">Eksportuj do PDF</button>
-                        <button type="button" onclick="exportToExcel()">Eksportuj do Excel</button>
-                    </div>
-                </section>
+        <section id="export-section">
+            <h2>Raporty</h2>
+            <div class="export-buttons">
+                <button type="button" onclick="exportToPDF()">Eksportuj do PDF</button>
+                <button type="button" onclick="exportToExcel()">Eksportuj do Excel</button>
+                <button type="button" onclick="exportAllQRCodes()" style="background-color: #4CAF50;">Pobierz wszystkie QR Kody (ZIP)</button>
+            </div>
+        </section>
                 
                 <section id="data-transfer-section">
                     <h2>Przenoszenie Danych (Import/Eksport)</h2>
@@ -377,9 +463,9 @@
                     <form class="ajax-form" id="add-invite-user-form">
                         <input type="hidden" name="action" value="add_or_invite_user">
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <input type="email" name="email" placeholder="Adres e-mail użytkownika" required style="flex-grow: 1;">
+                            <input type="email" name="email" placeholder="Adres e-mail użytkownika" required style="flex-grow: 1;" autocomplete="email">
                             <?php if ($is_admin): ?>
-                                <input type="password" name="password" placeholder="Hasło (jeśli nowy)" style="flex-grow: 1;">
+                                <input type="password" name="password" placeholder="Hasło (jeśli nowy)" style="flex-grow: 1;" autocomplete="new-password">
                             <?php endif; ?>
                             <select name="permission_level">
                                 <option value="viewer">Tylko podgląd</option>
@@ -408,9 +494,27 @@
     </main>
 
     <!-- SEKCJA ŁADOWANIA SKRYPTÓW -->
-    <script src="lib/jspdf.umd.min.js" defer></script>
-    <script src="lib/jspdf.plugin.autotable.min.js" defer></script>
+   <script src="lib/jspdf.umd.min.js"></script>
+    <script src="lib/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
-    <script src="js/script.js" defer></script>
+    
+    <!-- 1. Zmienne globalne i funkcje pomocnicze -->
+    <script src="js/globals.js"></script> 
+    <script src="js/utils.js"></script>
+
+    <!-- 2. Modale i Autoryzacja -->
+    <script src="js/modals.js"></script>
+    <script src="js/users.js"></script>
+
+    <!-- 3. Główne sekcje aplikacji -->
+    <script src="js/tasks_calendar.js"></script>
+    <script src="js/guests.js"></script>
+    <script src="js/budget.js"></script>
+    <script src="js/seating.js"></script>
+    <script src="js/export.js"></script>
+
+    <!-- 4. Główna pętla i AJAX (musi być OSTATNI) -->
+    <script src="js/main.js" defer></script> 
+
 </body>
 </html>

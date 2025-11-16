@@ -53,9 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p style="color: red; background: #ffebee; padding: 10px; border-radius: 4px;"><?php echo htmlspecialchars($error_message); ?></p>
                 <?php endif; ?>
                 <label for="email">E-mail:</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required autocomplete="email">
                 <label for="password">Hasło:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
                 <button type="submit" style="width: 100%; margin-top: 20px;">Zaloguj</button>
             </form>
         </section>

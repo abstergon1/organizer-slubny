@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
 /* css/style.css (WERSJA Z POPRAWIONYMI FORMULARZAMI LOGOWANIA i NOWYM PLANEM STOŁÓW) */
-=======
-/* css/style.css (WERSJA Z POPRAWIONYMI FORMULARZAMI LOGOWANIA) */
->>>>>>> Stashed changes
 
 /* --- ZMIENNE GLOBALNE I RESET --- */
 :root {
@@ -35,21 +31,19 @@ h1 { text-align: center; margin-bottom: 15px; font-size: 1.8em; }
 .nav-button { background: transparent; border: 1px solid white; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; }
 .nav-button:hover, .nav-button.active { background-color: white; color: var(--primary-color); transform: translateY(-2px); }
 main { padding: 20px; max-width: 1400px; margin: 0 auto; }
-.page { display: none; }
-.page.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+.page { 
+    display: none; 
+}
+.page.active { 
+    display: block; 
+}
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 section { background-color: white; margin: 20px 0; padding: 25px; border-radius: 8px; box-shadow: var(--shadow); }
 h2 { color: var(--primary-color); border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
 h3 { margin-top: 20px; margin-bottom: 10px; color: var(--secondary-color); }
 
-<<<<<<< Updated upstream
 /* --- ELEMENTY FORMULARZY --- */
 input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], select, textarea { 
-=======
-/* --- ELEMENTY FORMULARZY (POPRAWIONE SELEKTORY) --- */
-/* POPRAWKA 1: Dodano input[type="email"], input[type="password"] do listy */
-input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], select { 
->>>>>>> Stashed changes
     width: 100%; 
     padding: 12px; 
     margin: 5px 0 10px 0; 
@@ -57,30 +51,16 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
     border-radius: 4px; 
     font-size: 1em; 
 }
-<<<<<<< Updated upstream
-=======
-
-/* POPRAWKA 2: Uogólniono selektor dla etykiet, aby działał też na stronach logowania */
->>>>>>> Stashed changes
 section label {
     display: block;
     margin-top: 15px;
     font-weight: bold;
 }
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 button { padding: 12px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s, transform 0.2s; }
 button:hover { background-color: var(--primary-color); transform: translateY(-1px); }
 button.secondary { background-color: #aaa; }
 button.secondary:hover { background-color: #888; }
 .remove-child-btn { background: #f44336; padding: 5px 10px; font-size: 0.8em; color: white; border-radius: 50%; width: 30px; height: 30px; }
-<<<<<<< Updated upstream
-=======
-.checkbox-label { display: flex; align-items: center; gap: 8px; }
-/* Zapewnia, że ogólna reguła dla label nie zepsuje checkboxów */
->>>>>>> Stashed changes
 .checkbox-label { display: flex; align-items: center; gap: 8px; margin-top: 0; font-weight: normal; }
 
 
@@ -98,16 +78,7 @@ button.secondary:hover { background-color: #888; }
 .modal-actions { margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px; }
 .import-prompt { margin-top: 20px; font-style: italic; color: #666; text-align: center; }
 
-<<<<<<< Updated upstream
 /* --- SEKCJA: ZADANIA I KALENDARZ (bez zmian) --- */
-=======
-/* --- STRONY LOGOWANIA I REJESTRACJI --- */
-body.auth-page { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f9f9f9; }
-.auth-container { width: 100%; max-width: 400px; }
-
-
-/* --- SEKCJA: ZADANIA I KALENDARZ --- */
->>>>>>> Stashed changes
 #tasks-section .task-input { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } #tasks-section .task-input input { flex: 1; min-width: 150px; } #tasks-section .task-input button { flex-shrink: 0; } #taskList { list-style: none; } 
 #taskList li { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; } 
 #taskList li.completed span { text-decoration: line-through; color: #888; } 
@@ -117,6 +88,29 @@ body.auth-page { display: flex; justify-content: center; align-items: center; he
 .task-on-calendar.task { background-color: var(--secondary-color); }
 .task-on-calendar.payment { background-color: var(--payment-color); }
 .task-on-calendar.completed { background-color: var(--success-color); text-decoration: line-through;}
+
+/* Podświetlenie dzisiejszego dnia */
+.calendar-day.today {
+    background-color: #ffe0b2; /* Jasny pomarańczowy/żółty */
+    border: 2px solid #ff9800; /* Pomarańczowa ramka */
+}
+
+/* Upewnij się, że zadania w modalu szczegółów są czytelne */
+#dayDetailsList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+#dayDetailsList li span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+#dayDetailsList li input[type="checkbox"] {
+    flex-shrink: 0;
+    margin-right: 5px;
+}
 
 /* --- SEKCJA: GOŚCIE (bez zmian) --- */
 .guest-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; } .guest-form p { grid-column: 1 / -1; margin: 10px 0 0 0; font-weight: bold; } #children-inputs div, #edit-children-inputs div { display: flex; gap: 10px; align-items: center; margin-bottom: 5px; } .guest-filters { margin: 20px 0; display: flex; gap: 10px; align-items: center; } .filter-btn { background-color: #eee; color: #333; } .filter-btn.active { background-color: var(--secondary-color); color: white; } #guestTable { width: 100%; border-collapse: collapse; margin-top: 20px; } #guestTable th, #guestTable td { border: 1px solid var(--border-color); padding: 12px; text-align: left; } #guestTable th { background-color: var(--light-bg-color); } #guestTable tfoot td { font-weight: bold; background-color: var(--light-bg-color); }
@@ -158,22 +152,7 @@ body.auth-page { display: flex; justify-content: center; align-items: center; he
 /* --- SEKCJA: PLAN STOŁÓW (WIZUALIZACJA ZGODNA Z REFERENCJĄ) --- */
 .table-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; } 
 .seating-area { display: flex; flex-direction: column; gap: 20px; } 
-<<<<<<< Updated upstream
 .guest-pool { width: 100%; min-height: auto; max-height: 250px; overflow-y: auto; background: #f9f9f9; border: 2px dashed #ccc; padding: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-start; }
-=======
-.guest-pool { width: 100%; min-height: auto; max-height: 250px; overflow-y: auto; background: #f9f9f9; border: 2px dashed #ccc; padding: 10px; border-radius: 5px; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-#tables-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 100px; min-height: 400px; padding: 20px 0; } 
-.table-wrapper { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; width: 100%; }
-.table-representation { flex-shrink: 0; border: 3px solid var(--secondary-color); background: var(--light-bg-color); position: relative; display: flex; justify-content: center; align-items: center; color: var(--primary-color); font-weight: bold; text-align: center; } 
-.table-representation.round { width: 320px; height: 320px; border-radius: 50%; } 
-.table-representation.rect { width: 95%; max-width: 1200px; height: 150px; border-radius: 10px; } 
-.table-representation span { background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 10px; font-size: 1.2em; } 
-.seat { position: absolute; width: 70px; height: 70px; background: #c5cae9; border: 1px solid #7986cb; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.9em; text-align: center; overflow: hidden; cursor: pointer; transition: all 0.2s; } 
-.seat:hover { transform: scale(1.1); } 
-.seat.occupied { background: var(--secondary-color); color: white; cursor: grab; } 
-.seat[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 5px 10px; border-radius: 5px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 10; } 
-.seat[data-tooltip]:hover::after { opacity: 1; visibility: visible; z-index: 20; } 
->>>>>>> Stashed changes
 .guest-item { background-color: var(--accent-color); padding: 8px 15px; margin: 5px; border-radius: 20px; cursor: grab; user-select: none; text-align: center; }
 
 #tables-container { 
@@ -327,3 +306,70 @@ body.auth-page { display: flex; justify-content: center; align-items: center; he
 #importFileInput { display: none; }
 .import-label { background-color: var(--secondary-color); color: white; padding: 12px 20px; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; }
 .import-label:hover { background-color: var(--primary-color); }
+
+
+
+#vendorTable th, #vendorTable td {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+    font-size: 0.9em;
+}
+
+#vendorTable thead th {
+    background-color: var(--light-bg-color);
+}
+
+/* Styl dla wiersza dostawcy (kliknięcie) */
+.vendor-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.vendor-row:hover {
+    background-color: #f7f7ff;
+}
+
+/* Wiersz szczegółów (ukryty domyślnie) */
+.payment-details-row td {
+    padding: 0;
+    border-top: none;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.payment-details-content {
+    padding: 10px 20px;
+    background-color: #fafafa;
+}
+
+/* Tabela rat wewnątrz szczegółów */
+.payments-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.payments-list th, .payments-list td {
+    padding: 5px 10px;
+    border-bottom: 1px dashed #ddd;
+    font-size: 0.85em;
+}
+.payments-list th {
+    background-color: #eee;
+}
+
+/* Styl dla paska postępu */
+.progress-bar-container {
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 15px;
+    width: 100%;
+    margin: 2px 0;
+}
+.progress-bar {
+    height: 100%;
+    text-align: center;
+    color: white;
+    font-size: 0.8em;
+    line-height: 15px;
+}

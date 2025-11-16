@@ -93,12 +93,55 @@ if ($token) {
     </style>
 </head>
 <body>
-    <div class="rsvp-container">
+    
+	    <div class="rsvp-container">
         <h1>Potwierdzenie Obecności na weselu</h1>
 
         <?php if ($error): ?>
             <p class="message error"><?php echo htmlspecialchars($error); ?></p>
+        <?php elseif (!$guest): ?>
+             <p class="message error">Brak tokenu lub nieprawidłowy link do potwierdzenia obecności.</p>
         <?php elseif ($guest): 
+            // --- KOD GOŚCIA I LICZNIKÓW ZACZYNA SIĘ TUTAJ ---
+        ?>
+        
+         <!-- NOWA SEKCJA LICZNIKÓW -->
+        <div style="margin: 20px 0; padding: 15px; border: 1px solid #e1bee7; border-radius: 8px;">
+            <p style="font-weight: bold; color: #4a148c;">Ślub odbędzie się za:</p>
+            <div id="countdown" style="font-size: 1.8em; font-weight: bold; color: #7b1fa2; margin-top: 5px;">Ładowanie...</div>
+            
+            <?php 
+                $rsvp_deadline = $settings['rsvp_deadline_date'] ?? '';
+                // WARUNEK: rsvp_deadline_date musi być ustawiony ORAZ status musi być inny niż 'confirmed' i 'rejected'
+                if ($rsvp_deadline && !in_array($guest['rsvp_status'], ['confirmed', 'rejected'])): 
+            ?>
+            <hr style="margin: 10px 0; border-color: #f3e5f5;">
+            <p style="font-weight: bold; color: #d32f2f;">Prosimy o potwierdzenie obecności klikając poniżej lub przez kontakt bezpośredni do Państwa Młodych do dnia:</p>
+            
+            <!-- ZMIANA: WYŚWIETLANIE STATYCZNEJ DATY Zamiast LICZNIKA -->
+            <div id="rsvpDeadline" style="font-size: 1.2em; font-weight: bold; color: #d32f2f; margin-top: 5px;">
+                <?php 
+                    // Formatowanie daty na polski format
+                    $dateObj = DateTime::createFromFormat('Y-m-d', $rsvp_deadline);
+                    if ($dateObj) {
+                        // Polskie nazwy dni/miesięcy
+                        setlocale(LC_TIME, 'pl_PL.UTF-8', 'pl_PL', 'pl');
+                        echo strftime('%e %B %Y', $dateObj->getTimestamp());
+                    } else {
+                        echo htmlspecialchars($rsvp_deadline);
+                    }
+                ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+
+        <?php if ($success): ?>
+            <p class="message success"><?php echo htmlspecialchars($success); ?></p>
+        <?php endif; ?>
+        
+        <?php 
+        
             // Zmienne dla nazw i liczenia
             $guest_names = array_filter([$guest['guest1_name'], $guest['guest2_name']]);
             // ZMIANA: Używamy potwierdzonej liczby dorosłych, a nie zaproszonej
@@ -121,7 +164,7 @@ if ($token) {
                     if ($guest['rsvp_status'] === 'unconfirmed') echo 'Czekamy na Państwa odpowiedź';
                     if ($guest['rsvp_status'] === 'pending') echo 'Oczekuje na powinformowanie Państwa Młodych, do czasu ich zatweirdzenia mogą Państwo edytować poniższe dane';
                     if ($guest['rsvp_status'] === 'confirmed') echo 'Obecność potwierdzona przez Państwa Młodych';
-                    if ($guest['rsvp_status'] === 'rejected') echo 'Państwa rezygnacja została odnotowana'; // DODANO rejected
+                    if ($guest['rsvp_status'] === 'rejected') echo 'Państwa rezygnacja została odnotowana'; 
                 ?>
             </p>
 
@@ -247,5 +290,48 @@ if ($token) {
 
         <?php endif; ?>
     </div>
+	
+<script>
+    // Sprawdź, czy ustawienia daty ślubu istnieją (potrzebne do daty i czasu)
+    <?php 
+    $wedding_date_str = $settings['wedding_date'] ?? '';
+    $wedding_time_str = $settings['wedding_time'] ?? '16:00';
+    ?>
+
+    const startRsvpCountdown = (targetDateString, elementId) => {
+        const countdownElement = document.getElementById(elementId);
+        if (!targetDateString || !countdownElement) return;
+
+        // Łączenie daty i czasu (dla ślubu)
+        const targetDateTime = new Date(targetDateString).getTime();
+        
+        const updateCountdown = () => {
+            const distance = targetDateTime - new Date().getTime();
+            
+            if (distance < 0) { 
+                clearInterval(interval); 
+                countdownElement.innerHTML = "Wszystkiego najlepszego!";
+                countdownElement.style.color = '#333';
+                return; 
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        };
+
+        const interval = setInterval(updateCountdown, 1000);
+        updateCountdown(); // Pierwsze wywołanie natychmiast
+    };
+
+    // 1. Licznik Ślubu (tylko jeden licznik pozostaje)
+    const weddingDateWithTime = "<?php echo $wedding_date_str . 'T' . $wedding_time_str; ?>";
+    if ("<?php echo $wedding_date_str; ?>") {
+        startRsvpCountdown(weddingDateWithTime, 'countdown');
+    }
+</script>
 </body>
 </html>

@@ -2,28 +2,19 @@
 // functions.php
 require_once 'db_connect.php';
 
-<<<<<<< Updated upstream
-=======
-// --- FUNKCJE POMOCNICZE ---
->>>>>>> Stashed changes
 function get_person_name($person_type, $person_id) {
     global $conn;
     if ($person_type === 'guest1' || $person_type === 'guest2') {
         $stmt = $conn->prepare("SELECT guest1_name, guest2_name FROM guests WHERE id = ?");
         $stmt->bind_param("i", $person_id);
     } elseif ($person_type === 'child') {
-<<<<<<< Updated upstream
         // ZMIANA: Pobieramy również wiek
         $stmt = $conn->prepare("SELECT child_name, age FROM children WHERE id = ?");
-=======
-        $stmt = $conn->prepare("SELECT child_name FROM children WHERE id = ?");
->>>>>>> Stashed changes
         $stmt->bind_param("i", $person_id);
     } else { return "Nieznany Gość"; }
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
-<<<<<<< Updated upstream
         if ($person_type === 'child') {
             // ZMIANA: Zwracamy Imię i Wiek
             return $row['child_name'] . ' (' . $row['age'] . 'l)';
@@ -33,13 +24,6 @@ function get_person_name($person_type, $person_id) {
     }
     return "Błąd Gościa";
 }
-=======
-        return ($person_type === 'guest1') ? $row['guest1_name'] : (($person_type === 'guest2') ? $row['guest2_name'] : $row['child_name']);
-    }
-    return "Błąd Gościa";
-}
-
->>>>>>> Stashed changes
 // --- USTAWIENIA ---
 function get_settings($organizer_id) {
     global $conn;
@@ -49,33 +33,21 @@ function get_settings($organizer_id) {
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-<<<<<<< Updated upstream
         // Nowe klucze: 'photos_info', 'rodo_info' zostaną pobrane
-=======
->>>>>>> Stashed changes
         $settings[$row['setting_key']] = $row['setting_value'];
     }
     return $settings;
 }
-<<<<<<< Updated upstream
 
 function update_setting($organizer_id, $key, $value) {
     global $conn;
     // Nowe klucze: 'photos_info', 'rodo_info' zostaną zapisane
-=======
-function update_setting($organizer_id, $key, $value) {
-    global $conn;
->>>>>>> Stashed changes
     $stmt = $conn->prepare("INSERT INTO settings (organizer_id, setting_key, setting_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
     $stmt->bind_param("isss", $organizer_id, $key, $value, $value);
     return $stmt->execute();
 }
 
 // --- ZADANIA ---
-<<<<<<< Updated upstream
-// ... (get_tasks, add_task, update_task_completion, delete_task bez zmian)
-=======
->>>>>>> Stashed changes
 function get_tasks($organizer_id) {
     global $conn;
     $stmt = $conn->prepare("SELECT * FROM tasks WHERE organizer_id = ? ORDER BY date ASC");
@@ -104,15 +76,10 @@ function delete_task($organizer_id, $task_id) {
 }
 
 // --- GOŚCIE ---
-<<<<<<< Updated upstream
 // MODYFIKACJA: get_guests - upewnienie się, że pobieramy nowe kolumny
 function get_guests($organizer_id) {
     global $conn;
     // Zmieniono SELECT * w oryginalnym kodzie to obejmie nowe kolumny
-=======
-function get_guests($organizer_id) {
-    global $conn;
->>>>>>> Stashed changes
     $stmt = $conn->prepare("SELECT * FROM guests WHERE organizer_id = ?");
     $stmt->bind_param("i", $organizer_id);
     $stmt->execute();
@@ -127,7 +94,6 @@ function get_guests($organizer_id) {
     }
     return $guests;
 }
-<<<<<<< Updated upstream
 
 // NOWA FUNKCJA: Generuje unikalny token (jeśli nie istnieje)
 function generate_rsvp_token($guest_id) {
@@ -266,10 +232,6 @@ function get_guest_by_token($token) {
 
 function add_guest($organizer_id, $guest1_name, $guest2_name, $children_data) {
     global $conn;
-=======
-function add_guest($organizer_id, $guest1_name, $guest2_name, $children_data) {
-    global $conn;
->>>>>>> Stashed changes
     $stmt = $conn->prepare("INSERT INTO guests (organizer_id, guest1_name, guest2_name) VALUES (?, ?, ?)");
     $stmt->bind_param("iss", $organizer_id, $guest1_name, $guest2_name);
     if ($stmt->execute()) {
@@ -320,7 +282,6 @@ function delete_guest($organizer_id, $guest_id) {
 }
 
 // --- USŁUGODAWCY / KOSZTY ---
-<<<<<<< Updated upstream
 
 // NOWA FUNKCJA: Pobiera płatności dla dostawcy
 function get_vendor_payments($vendor_id) {
@@ -339,41 +300,150 @@ function add_vendor_payment($vendor_id, $amount, $date, $description) {
     return $stmt->execute();
 }
 
-// MODYFIKACJA: get_vendors - dodaje sumę wpłaconych kwot
+function delete_vendor_payment($payment_id, $organizer_id) {
+    global $conn;
+    $conn->begin_transaction();
+    
+    try {
+        // Krok 1: Pobierz ID dostawcy i datę płatności (potrzebne do zlokalizowania zadania)
+        $stmt_fetch = $conn->prepare("SELECT vendor_id, payment_date, amount FROM vendor_payments WHERE id = ?");
+        $stmt_fetch->bind_param("i", $payment_id);
+        $stmt_fetch->execute();
+        $payment_details = $stmt_fetch->get_result()->fetch_assoc();
+
+        if (!$payment_details) {
+            throw new Exception("Płatność o ID $payment_id nie istnieje.");
+        }
+        
+        $vendor_id = $payment_details['vendor_id'];
+        $payment_date = $payment_details['payment_date'];
+        $amount = $payment_details['amount'];
+
+        // Krok 2: Usuń powiązane zadanie rejestracyjne
+        $vendor_name = get_vendor_name_by_id($vendor_id);
+        
+        // NOWY WZORZEC: Szukamy zadania, które zawiera 'Zarejestrowano wpłatę: [Nazwa Dostawcy]'
+        // To jest najbezpieczniejszy wzorzec, bo nie polega na formacie liczby.
+        $task_name_pattern_safe = "Zarejestrowano wpłatę: " . $vendor_name . "%"; 
+        
+        // Ograniczamy do daty, organizera i dostawcy
+        $stmt_task = $conn->prepare("
+            DELETE FROM tasks 
+            WHERE 
+                organizer_id = ? AND 
+                vendor_id = ? AND 
+                date = ? AND 
+                completed = 1 AND 
+                name LIKE ?
+        ");
+        
+        $stmt_task->bind_param("iiss", $organizer_id, $vendor_id, $payment_date, $task_name_pattern_safe);
+        $stmt_task->execute();
+        
+        // Krok 3: Usuń samą płatność
+        $stmt_delete = $conn->prepare("DELETE FROM vendor_payments WHERE id = ?");
+        $stmt_delete->bind_param("i", $payment_id);
+        $stmt_delete->execute();
+        
+        $conn->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $conn->rollback();
+        // Propagacja błędu, jeśli nie udało się znaleźć płatności
+        if (strpos($e->getMessage(), "Płatność o ID") !== false) {
+             throw $e;
+        }
+        // W przeciwnym razie, zwróć błąd generyczny
+        return false;
+    }
+}
+
+/**
+ * Pobiera listę kategorii dla organizera.
+ */
+function get_vendor_categories($organizer_id) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT id, name FROM vendor_categories WHERE organizer_id = ? ORDER BY name ASC");
+    $stmt->bind_param("i", $organizer_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+/**
+ * Dodaje nową kategorię.
+ */
+function add_vendor_category($organizer_id, $name) {
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO vendor_categories (organizer_id, name) VALUES (?, ?)");
+    $stmt->bind_param("is", $organizer_id, $name);
+    return $stmt->execute();
+}
+
+/**
+ * Usuwa kategorię i ustawia category_id na NULL dla powiązanych dostawców.
+ */
+function delete_vendor_category($organizer_id, $category_id) {
+    global $conn;
+    $conn->begin_transaction();
+    try {
+        // 1. Zmień category_id na NULL u wszystkich dostawców
+        $stmt_update = $conn->prepare("UPDATE vendors SET category_id = NULL WHERE category_id = ? AND organizer_id = ?");
+        $stmt_update->bind_param("ii", $category_id, $organizer_id);
+        $stmt_update->execute();
+        
+        // 2. Usuń kategorię
+        $stmt_delete = $conn->prepare("DELETE FROM vendor_categories WHERE id = ? AND organizer_id = ?");
+        $stmt_delete->bind_param("ii", $category_id, $organizer_id);
+        $stmt_delete->execute();
+        
+        $conn->commit();
+        return true;
+    } catch (Exception $e) {
+        $conn->rollback();
+        return false;
+    }
+}
+
 function get_vendors($organizer_id) {
     global $conn;
     $stmt = $conn->prepare("
         SELECT 
             v.*, 
+            vc.name AS category_name,  /* DODANO NAZWĘ KATEGORII */
             COALESCE(SUM(vp.amount), 0.00) AS total_paid,
             v.cost <= COALESCE(SUM(vp.amount), 0.00) AS paid_full_status
         FROM vendors v
         LEFT JOIN vendor_payments vp ON v.id = vp.vendor_id
+        LEFT JOIN vendor_categories vc ON v.category_id = vc.id /* DODANO ŁĄCZENIE Z KATEGORIĄ */
         WHERE v.organizer_id = ?
-        GROUP BY v.id
-        ORDER BY v.name ASC
+        GROUP BY v.id, vc.name
+        ORDER BY vc.name ASC, v.name ASC /* GRUPUJEMY WYNIKI PO KATEGORII */
     ");
     $stmt->bind_param("i", $organizer_id);
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// MODYFIKACJA: add_vendor - usunięto deposit, paid_full
-function add_vendor($organizer_id, $name, $cost, $payment_date) {
+function add_vendor($organizer_id, $name, $cost, $payment_date, $category_id) {
     global $conn;
-    $stmt = $conn->prepare("INSERT INTO vendors (organizer_id, name, cost, payment_date) VALUES (?, ?, ?, ?)");
+    // Sprawdź, czy category_id to 0 (wybór "Brak/Wybierz"), jeśli tak, ustaw NULL
+    $final_category_id = $category_id > 0 ? $category_id : null;
+    $stmt = $conn->prepare("INSERT INTO vendors (organizer_id, name, cost, payment_date, category_id) VALUES (?, ?, ?, ?, ?)");
     $payment_date_or_null = !empty($payment_date) ? $payment_date : null;
-    $stmt->bind_param("isds", $organizer_id, $name, $cost, $payment_date_or_null); // ZMIENIONO z isddis na isds
+    // ZMIANA: Dodano category_id do binda: isdsi
+    $stmt->bind_param("isdsi", $organizer_id, $name, $cost, $payment_date_or_null, $final_category_id); 
     if ($stmt->execute()) return $conn->insert_id;
     return false;
 }
 
-// MODYFIKACJA: update_vendor - usunięto deposit, paid_full
-function update_vendor($organizer_id, $id, $name, $cost, $payment_date) {
+function update_vendor($organizer_id, $id, $name, $cost, $payment_date, $category_id) {
     global $conn;
-    $stmt = $conn->prepare("UPDATE vendors SET name = ?, cost = ?, payment_date = ? WHERE id = ? AND organizer_id = ?");
+    $final_category_id = $category_id > 0 ? $category_id : null;
+    $stmt = $conn->prepare("UPDATE vendors SET name = ?, cost = ?, payment_date = ?, category_id = ? WHERE id = ? AND organizer_id = ?");
     $payment_date_or_null = !empty($payment_date) ? $payment_date : null;
-    $stmt->bind_param("sdsii", $name, $cost, $payment_date_or_null, $id, $organizer_id); // ZMIENIONO z sddisii na sdsii
+    // ZMIANA: Dodano category_id do binda: sdsiii
+    $stmt->bind_param("sdsiii", $name, $cost, $payment_date_or_null, $final_category_id, $id, $organizer_id); 
     return $stmt->execute();
 }
 
@@ -399,80 +469,19 @@ function delete_vendor($organizer_id, $vendor_id) {
     } catch (Exception $e) { $conn->rollback(); return false; }
 }
 
-// --- STOŁY I MIEJSCA ---
-// ... (reszta funkcji bez zmian)
-=======
-function get_vendors($organizer_id) {
+/**
+ * Pobiera nazwę dostawcy po ID.
+ */
+function get_vendor_name_by_id($vendor_id) {
     global $conn;
-    $stmt = $conn->prepare("SELECT * FROM vendors WHERE organizer_id = ?");
-    $stmt->bind_param("i", $organizer_id);
+    $stmt = $conn->prepare("SELECT name FROM vendors WHERE id = ?");
+    $stmt->bind_param("i", $vendor_id);
     $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result['name'] ?? 'Nieznany Dostawca';
 }
-function add_vendor($organizer_id, $name, $cost, $deposit, $paid_full, $payment_date) {
-    global $conn;
-    $stmt = $conn->prepare("INSERT INTO vendors (organizer_id, name, cost, deposit, paid_full, payment_date) VALUES (?, ?, ?, ?, ?, ?)");
-    $payment_date_or_null = !empty($payment_date) ? $payment_date : null;
-    $stmt->bind_param("isddis", $organizer_id, $name, $cost, $deposit, $paid_full, $payment_date_or_null);
-    if ($stmt->execute()) return $conn->insert_id;
-    return false;
-}
-function update_vendor($organizer_id, $id, $name, $cost, $deposit, $paid_full, $payment_date) {
-    global $conn;
-    $stmt = $conn->prepare("UPDATE vendors SET name = ?, cost = ?, deposit = ?, paid_full = ?, payment_date = ? WHERE id = ? AND organizer_id = ?");
-    $payment_date_or_null = !empty($payment_date) ? $payment_date : null;
-    $stmt->bind_param("sddisii", $name, $cost, $deposit, $paid_full, $payment_date_or_null, $id, $organizer_id);
-    return $stmt->execute();
-}
-function delete_vendor($organizer_id, $vendor_id) {
-    global $conn;
-    $conn->begin_transaction();
-    try {
-        $stmt_task = $conn->prepare("DELETE FROM tasks WHERE vendor_id = ? AND organizer_id = ?");
-        $stmt_task->bind_param("ii", $vendor_id, $organizer_id);
-        $stmt_task->execute();
-
-        $stmt_vendor = $conn->prepare("DELETE FROM vendors WHERE id = ? AND organizer_id = ?");
-        $stmt_vendor->bind_param("ii", $vendor_id, $organizer_id);
-        $stmt_vendor->execute();
-        $conn->commit();
-        return true;
-    } catch (Exception $e) { $conn->rollback(); return false; }
-}
-// --- CENNIK - PODPUNKTY (per dorosły) ---
-function get_budget_items($organizer_id) {
-    global $conn;
-    $stmt = $conn->prepare("SELECT * FROM budget_items WHERE organizer_id = ? ORDER BY id DESC");
-    $stmt->bind_param("i", $organizer_id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-}
-
-function add_budget_item($organizer_id, $label, $unit_price, $per_adult = 1) {
-    global $conn;
-    $stmt = $conn->prepare("INSERT INTO budget_items (organizer_id, label, unit_price, per_adult) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isdi", $organizer_id, $label, $unit_price, $per_adult);
-    $stmt->execute();
-    return $conn->insert_id;
-}
-
-function update_budget_item($organizer_id, $id, $label, $unit_price, $per_adult) {
-    global $conn;
-    $stmt = $conn->prepare("UPDATE budget_items SET label = ?, unit_price = ?, per_adult = ? WHERE id = ? AND organizer_id = ?");
-    $stmt->bind_param("sdiii", $label, $unit_price, $per_adult, $id, $organizer_id);
-    return $stmt->execute();
-}
-
-function delete_budget_item($organizer_id, $id) {
-    global $conn;
-    $stmt = $conn->prepare("DELETE FROM budget_items WHERE id = ? AND organizer_id = ?");
-    $stmt->bind_param("ii", $id, $organizer_id);
-    return $stmt->execute();
-}
-
 
 // --- STOŁY I MIEJSCA ---
->>>>>>> Stashed changes
 function get_tables($organizer_id) {
     global $conn;
     $stmt = $conn->prepare("SELECT * FROM tables WHERE organizer_id = ?");

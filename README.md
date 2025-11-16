@@ -1,4 +1,4 @@
-# Wedding Organizer
+# Wedding Organizer PRO+
 
 **W pełni funkcjonalna aplikacja webowa PHP (Vanilla PHP + AJAX/JS/MySQL) do zarządzania weselem, gośćmi, budżetem i planem stołów.**
 

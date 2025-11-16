@@ -1,5 +1,4 @@
 <?php
-<<<<<<< Updated upstream
 // index.php (KONTROLER)
 
 // Pliki pomocnicze
@@ -7,34 +6,21 @@ require_once 'auth.php';
 require_once 'functions.php';
 
 // Wstępna walidacja dostępu
-=======
-// index.php (WERSJA OSTATECZNA, KOMPLETNA Z PEŁNYM HTML)
-require_once 'auth.php';
-require_once 'functions.php';
-
->>>>>>> Stashed changes
 if (!$is_admin && !$organizer_id) {
     die("Nie masz jeszcze dostępu do żadnego organizera. Skontaktuj się z administratorem, aby Cię zaprosił.");
 }
-$settings = $organizer_id ? get_settings($organizer_id) : [];
 
-<<<<<<< Updated upstream
 // Pobieranie ustawień dla widoku
 $settings = $organizer_id ? get_settings($organizer_id) : [];
 
 // --- LOGIKA OBSŁUGI ŻĄDAŃ POST (AJAX) ---
 
-=======
->>>>>>> Stashed changes
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Nieznana akcja lub brak uprawnień.'];
 
-<<<<<<< Updated upstream
     // LOGIKA ZARZĄDZANIA UŻYTKOWNIKAMI (ADMIN/OWNER)
-=======
->>>>>>> Stashed changes
     if ($action === 'add_or_invite_user') {
         if (!$is_admin && $permission_level !== 'owner') {
             echo json_encode($response);
@@ -110,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($response);
         exit;
     }
-<<<<<<< Updated upstream
     
     // LOGIKA OBSŁUGI DANYCH (EDITOR/OWNER)
     if (can_edit($permission_level)) {
@@ -128,19 +113,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     $response = ['success' => true, 'message' => 'Ustawienia zapisane.']; 
                     break;
-=======
-
-    if (can_edit($permission_level)) {
-        try {
-            switch ($action) {
-                case 'save_wedding_date': update_setting($organizer_id, 'wedding_date', $_POST['wedding_date'] ?? ''); update_setting($organizer_id, 'price_adult', $_POST['price_adult'] ?? '0'); update_setting($organizer_id, 'price_child_older', $_POST['price_child_older'] ?? '0'); update_setting($organizer_id, 'price_child_younger', $_POST['price_child_younger'] ?? '0'); update_setting($organizer_id, 'price_accommodation', $_POST['price_accommodation'] ?? '0'); $response = ['success' => true, 'message' => 'Ustawienia zapisane.']; break;
->>>>>>> Stashed changes
+					
+                case 'save_rsvp_date':
+                    update_setting($organizer_id, 'rsvp_deadline_date', $_POST['rsvp_deadline_date'] ?? '');
+                    $response = ['success' => true, 'message' => 'Termin RSVP zapisany.']; 
+                    break;
                 case 'add_task': if (!empty($_POST['taskName']) && !empty($_POST['taskDate'])) { add_task($organizer_id, $_POST['taskName'], $_POST['taskDate'], $_POST['taskOwner']); $response = ['success' => true]; } else { $response['message'] = 'Nazwa i data zadania są wymagane.'; } break;
                 case 'toggle_task_completion': update_task_completion($organizer_id, (int)$_POST['task_id'], isset($_POST['completed']) && $_POST['completed'] === 'true' ? 1 : 0); $response = ['success' => true]; break;
                 case 'delete_task': delete_task($organizer_id, (int)$_POST['task_id']); $response = ['success' => true]; break;
                 case 'add_guest': $children_data = []; if (isset($_POST['addChildName'])) { for ($i = 0; $i < count($_POST['addChildName']); $i++) { if (!empty($_POST['addChildName'][$i])) { $children_data[] = ['name' => $_POST['addChildName'][$i], 'age' => (int)($_POST['addChildAge'][$i] ?? 0)]; } } } add_guest($organizer_id, $_POST['guest1Name'], $_POST['guest2Name'], $children_data); $response = ['success' => true]; break;
                 case 'edit_guest': $children_data = []; if (isset($_POST['editChildName'])) { for ($i = 0; $i < count($_POST['editChildName']); $i++) { if (!empty($_POST['editChildName'][$i])) { $children_data[] = ['name' => $_POST['editChildName'][$i], 'age' => (int)($_POST['editChildAge'][$i] ?? 0)]; } } } edit_guest($organizer_id, (int)$_POST['editGuestId'], $_POST['editGuest1Name'], $_POST['editGuest2Name'], $children_data); $response = ['success' => true]; break;
-<<<<<<< Updated upstream
                  case 'update_guest_status': 
                     // Stare klucze: 'confirmed', 'accommodation'
                     // rsvp_status jest teraz obsługiwany przez nową akcję lub poniższą
@@ -190,31 +172,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new Exception("Błąd generowania tokenu (możliwe, że już istnieje).");
                     }
                     break;
+					
+				case 'add_vendor_category':
+                    $category_name = trim($_POST['categoryName'] ?? '');
+                    if (empty($category_name)) throw new Exception("Nazwa kategorii jest wymagana.");
+                    if (!add_vendor_category($organizer_id, $category_name)) {
+                        throw new Exception("Błąd dodawania kategorii (możliwe, że już istnieje).");
+                    }
+                    $response = ['success' => true, 'message' => 'Kategoria dodana.'];
+                    break;
+                case 'delete_vendor_category':
+                    $category_id = (int)($_POST['category_id'] ?? 0);
+                    if (!delete_vendor_category($organizer_id, $category_id)) {
+                         throw new Exception("Błąd usuwania kategorii.");
+                    }
+                    $response = ['success' => true, 'message' => 'Kategoria usunięta, powiązani dostawcy zaktualizowani.'];
+                    break;
 			
                 // MODYFIKACJA: add_vendor - usunięto deposit, paid_full
                 case 'add_vendor': 
                     $payment_date = $_POST['vendorPaymentDate'] ?? null;
-                    $new_vendor_id = add_vendor($organizer_id, $_POST['vendorName'], (float)$_POST['vendorCost'], $payment_date); 
-                    
-                    // Jeśli wprowadzono zaliczkę przy dodawaniu dostawcy, rejestrujemy ją jako pierwszą płatność
-                    if ($new_vendor_id && !empty($_POST['vendorDeposit'])) {
-                        add_vendor_payment($new_vendor_id, (float)$_POST['vendorDeposit'], date('Y-m-d'), 'Pierwsza zaliczka/depozyt');
-                    }
-                    
-                    if ($new_vendor_id && $payment_date) { 
-                        add_task($organizer_id, "Zapłać dla: " . $_POST['vendorName'], $payment_date, 'Para Młoda', true, $new_vendor_id); 
-                    } 
+                    $category_id = (int)($_POST['vendorCategory'] ?? 0); // NOWY PARAMETR
+                    // Zmodyfikuj funckcję add_vendor w functions.php, aby przyjmowała $category_id
+                    $new_vendor_id = add_vendor($organizer_id, $_POST['vendorName'], (float)$_POST['vendorCost'], $payment_date, $category_id); 
+                    // ... (reszta logiki)
                     $response = ['success' => true]; 
                     break;
                     
-                // MODYFIKACJA: edit_vendor - usunięto deposit, paid_full
+                // MODYFIKACJA: edit_vendor (DODAJEMY category_id)
                 case 'edit_vendor': 
                     $vendor_id = (int)$_POST['editVendorId']; 
                     $vendor_name = $_POST['editVendorName']; 
                     $payment_date = !empty($_POST['editVendorPaymentDate']) ? $_POST['editVendorPaymentDate'] : null; 
-                    
-                    // Zmieniono wywołanie, usunięto zbędne parametry
-                    if (update_vendor($organizer_id, $vendor_id, $vendor_name, (float)$_POST['editVendorCost'], $payment_date)) { 
+                    $category_id = (int)($_POST['editVendorCategory'] ?? 0);
+
+                    if (update_vendor($organizer_id, $vendor_id, $vendor_name, (float)$_POST['editVendorCost'], $payment_date, $category_id)) { 
                         $task_stmt = $conn->prepare("SELECT id FROM tasks WHERE vendor_id = ? AND organizer_id = ? AND is_payment_task = 1"); 
                         $task_stmt->bind_param("ii", $vendor_id, $organizer_id); 
                         $task_stmt->execute(); 
@@ -254,12 +246,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $vendor_id = (int)$_POST['vendorId'];
                     $amount = (float)$_POST['paymentAmount'];
                     $date = $_POST['paymentDate'];
-                    $description = $_POST['paymentDescription'] ?? null;
+                    $description = trim($_POST['paymentDescription'] ?? '');
                     
                     if (!$vendor_id || !$amount || !$date) throw new Exception("Wszystkie pola płatności są wymagane.");
                     
                     if (add_vendor_payment($vendor_id, $amount, $date, $description)) {
-                        $response = ['success' => true, 'message' => 'Płatność zarejestrowana.'];
+                        $vendor_name = get_vendor_name_by_id($vendor_id);
+                        $task_name = "Zarejestrowano wpłatę: " . $vendor_name . " (" . number_format($amount, 2) . " PLN)"; // NOWY: Wymuszenie formatu 
+                                                
+                        if (add_task($organizer_id, $task_name, $date, 'Rejestr', 0, $vendor_id)) {
+                             update_task_completion($organizer_id, $conn->insert_id, 1);
+                        }
+                     
+                        $response = ['success' => true, 'message' => 'Płatność zarejestrowana i dodano zadanie do Kalendarza.'];
                     } else {
                         throw new Exception("Błąd podczas rejestracji płatności.");
                     }
@@ -267,6 +266,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                 case 'add_table': add_table($organizer_id, $_POST['tableName'], (int)$_POST['tableCapacity'], $_POST['tableShape']); $response = ['success' => true]; break;
                 case 'delete_table': delete_table($organizer_id, (int)$_POST['table_id']); $response = ['success' => true]; break;
+				case 'delete_vendor_payment':
+                    $payment_id = (int)($_POST['payment_id'] ?? 0);
+                    if (!delete_vendor_payment($payment_id, $organizer_id)) { 
+                         throw new Exception("Błąd usuwania płatności i powiązanego zadania.");
+                    }
+                    $response = ['success' => true, 'message' => 'Płatność i zadanie usunięte.'];
+                    break;
                 
                 // NOWA AKCJA: Wyczyść usadzenie stołu
                 case 'clear_table_seating':
@@ -280,41 +286,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                     
                 case 'assign_person': case 'unassign_person': 
-=======
-                case 'update_guest_status': update_guest_status($organizer_id, (int)$_POST['guest_id'], $_POST['key'], ($_POST['key'] === 'confirmed') ? (($_POST['value'] === 'true') ? 1 : 0) : (int)$_POST['value']); $response = ['success' => true]; break;
-                case 'delete_guest': delete_guest($organizer_id, (int)$_POST['guest_id']); $response = ['success' => true]; break;
-                case 'add_vendor': $new_vendor_id = add_vendor($organizer_id, $_POST['vendorName'], (float)$_POST['vendorCost'], (float)$_POST['vendorDeposit'], isset($_POST['vendorPaidFull']) ? 1 : 0, $_POST['vendorPaymentDate'] ?? null); if ($new_vendor_id && !empty($_POST['vendorPaymentDate'])) { add_task($organizer_id, "Zapłać dla: " . $_POST['vendorName'], $_POST['vendorPaymentDate'], 'Para Młoda', true, $new_vendor_id); } $response = ['success' => true]; break;
-                case 'edit_vendor': $vendor_id = (int)$_POST['editVendorId']; $vendor_name = $_POST['editVendorName']; $payment_date = !empty($_POST['editVendorPaymentDate']) ? $_POST['editVendorPaymentDate'] : null; if (update_vendor($organizer_id, $vendor_id, $vendor_name, (float)$_POST['editVendorCost'], (float)$_POST['editVendorDeposit'], isset($_POST['editVendorPaidFull']) ? 1 : 0, $payment_date)) { $task_stmt = $conn->prepare("SELECT id FROM tasks WHERE vendor_id = ? AND organizer_id = ? AND is_payment_task = 1"); $task_stmt->bind_param("ii", $vendor_id, $organizer_id); $task_stmt->execute(); $existing_task = $task_stmt->get_result()->fetch_assoc(); if ($payment_date && $existing_task) { $update_task_stmt = $conn->prepare("UPDATE tasks SET date = ?, name = ? WHERE id = ?"); $update_task_stmt->bind_param("ssi", $payment_date, "Zapłać dla: " . $vendor_name, $existing_task['id']); $update_task_stmt->execute(); } elseif ($payment_date && !$existing_task) { add_task($organizer_id, "Zapłać dla: " . $vendor_name, $payment_date, 'Para Młoda', true, $vendor_id); } elseif (!$payment_date && $existing_task) { delete_task($organizer_id, $existing_task['id']); } $response = ['success' => true]; } break;
-                case 'delete_vendor': delete_vendor($organizer_id, (int)$_POST['vendor_id']); $response = ['success' => true]; break;
-				case 'add_budget_item':
-    $new_id = add_budget_item(
-        $organizer_id,
-        trim($_POST['label'] ?? ''),
-        (float)($_POST['unit_price'] ?? 0),
-        1 // per_adult zawsze TRUE
-    );
-    $response = ['success' => true, 'id' => $new_id];
-    break;
-
-case 'edit_budget_item':
-    $ok = update_budget_item(
-        $organizer_id,
-        (int)$_POST['id'],
-        trim($_POST['label'] ?? ''),
-        (float)($_POST['unit_price'] ?? 0),
-        1
-    );
-    $response = ['success' => $ok];
-    break;
-
-case 'delete_budget_item':
-    $ok = delete_budget_item($organizer_id, (int)$_POST['id']);
-    $response = ['success' => $ok];
-    break;
-
-                case 'add_table': add_table($organizer_id, $_POST['tableName'], (int)$_POST['tableCapacity'], $_POST['tableShape']); $response = ['success' => true]; break;
-                case 'delete_table': delete_table($organizer_id, (int)$_POST['table_id']); $response = ['success' => true]; break;
->>>>>>> Stashed changes
                 case 'assign_person': case 'unassign_person': $conn->begin_transaction(); if ($action === 'assign_person') { $target_seat_id = (int)($_POST['seat_id'] ?? 0); $dragged_person_str = $_POST['dragged_person_id'] ?? ''; $source_seat_id = (int)($_POST['old_seat_id'] ?? 0); $parts = explode('-', $dragged_person_str); if (count($parts) !== 3) throw new Exception("Nieprawidłowy identyfikator osoby."); $person_type = $parts[1]; $person_id = (int)$parts[2]; $final_type = ($person_type === 'guest1' || $person_type === 'guest2') ? $person_type : 'child'; $final_id = $person_id; $person_on_target_seat = get_seat_assignment($organizer_id, $target_seat_id); if ($source_seat_id) unassign_person_from_seat($source_seat_id); assign_person_to_seat($target_seat_id, $final_type, $final_id); if ($person_on_target_seat && $person_on_target_seat['person_id']) { if ($source_seat_id) assign_person_to_seat($source_seat_id, $person_on_target_seat['person_type'], $person_on_target_seat['person_id']); } } else { unassign_person_from_seat((int)($_POST['seat_id'] ?? 0)); } $conn->commit(); $response = ['success' => true]; break;
             }
         } catch (Exception $e) {
@@ -326,321 +297,6 @@ case 'delete_budget_item':
     echo json_encode($response);
     exit;
 }
-<<<<<<< Updated upstream
 
 // --- ŁADOWANIE WIDOKU ---
 require 'views/dashboard.php';
-=======
-?>
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organizer Ślubny PRO+</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <!-- MODAL DO EDYCJI GOŚCI -->
-    <div id="edit-guest-modal" class="modal-overlay">
-        <div class="modal-content">
-            <form class="ajax-form">
-                <h2>Edytuj Dane Gości</h2>
-                <input type="hidden" name="action" value="edit_guest">
-                <input type="hidden" id="editGuestId" name="editGuestId">
-                <label>Gość 1 (mężczyzna)</label><input type="text" id="editGuest1Name" name="editGuest1Name" placeholder="Imię i nazwisko">
-                <label>Gość 2 (kobieta)</label><input type="text" id="editGuest2Name" name="editGuest2Name" placeholder="Imię i nazwisko">
-                <label>Dzieci:</label><div id="edit-children-inputs"></div>
-                <button type="button" onclick="addChildInput('edit')">+ Dodaj dziecko</button>
-                <div class="modal-actions">
-                    <button type="submit">Zapisz Zmiany</button>
-                    <button type="button" class="secondary" onclick="closeModal('edit-guest-modal')">Anuluj</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL DO EDYCJI KOSZTÓW -->
-    <div id="edit-vendor-modal" class="modal-overlay">
-        <div class="modal-content">
-            <form class="ajax-form">
-                <h2>Edytuj Koszt Usługodawcy</h2>
-                <input type="hidden" name="action" value="edit_vendor">
-                <input type="hidden" id="editVendorId" name="editVendorId">
-                <label>Nazwa usługi</label><input type="text" id="editVendorName" name="editVendorName">
-                <label>Całkowity koszt</label><input type="number" id="editVendorCost" name="editVendorCost" min="0" step="0.01">
-                <label>Zapłacona zaliczka</label><input type="number" id="editVendorDeposit" name="editVendorDeposit" min="0" step="0.01">
-                <label>Data płatności</label><input type="date" id="editVendorPaymentDate" name="editVendorPaymentDate">
-                <label class="checkbox-label"><input type="checkbox" id="editVendorPaidFull" name="editVendorPaidFull"> Opłacone w całości</label>
-                <div class="modal-actions">
-                    <button type="submit">Zapisz Zmiany</button>
-                    <button type="button" class="secondary" onclick="closeModal('edit-vendor-modal')">Anuluj</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <header>
-        <h1>Mój Organizer Ślubny</h1>
-         <div style="position: absolute; top: 10px; right: 20px;">
-             <a href="logout.php" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 4px;">Wyloguj</a>
-        </div>
-        <nav id="main-nav">
-            <?php if ($organizer_id): ?>
-                <button class="nav-button active" data-page="dashboard">Pulpit</button>
-                <button class="nav-button" data-page="tasks">Zadania i Kalendarz</button>
-                <button class="nav-button" data-page="guests">Lista Gości</button>
-                <button class="nav-button" data-page="budget">Budżet</button>
-                <button class="nav-button" data-page="seating">Plan Stołów</button>
-            <?php endif; ?>
-            
-            <?php if ($is_admin || $permission_level === 'owner'): ?>
-                <button class="nav-button <?php if (!$organizer_id) echo 'active'; ?>" data-page="users">Użytkownicy</button>
-            <?php endif; ?>
-
-             <?php if ($organizer_id): ?>
-                <button class="nav-button" data-page="export">Eksport</button>
-             <?php endif; ?>
-        </nav>
-    </header>
-
-    <main>
-        <?php if ($organizer_id): ?>
-            <!-- Strona 1: Pulpit -->
-            <div id="dashboard" class="page active">
-                <section class="dashboard-hero">
-                    <div class="dashboard-content">
-                        <h2>Nasza Data Ślubu</h2>
-                        <form class="date-setter ajax-form">
-                            <input type="hidden" name="action" value="save_wedding_date">
-                            <input type="date" id="weddingDate" name="wedding_date" title="Ustaw datę ślubu" value="<?php echo htmlspecialchars($settings['wedding_date'] ?? ''); ?>">
-                            <button type="submit">Zapisz Datę</button>
-                        </form>
-                        <div id="countdown-container">
-                            <div id="countdown">Ustaw datę, aby rozpocząć odliczanie.</div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Strona 2: Zadania -->
-            <div id="tasks" class="page">
-                 <section id="tasks-section">
-                    <h2>Zarządzanie Zadaniami</h2>
-                    <form class="task-input ajax-form">
-                        <input type="hidden" name="action" value="add_task">
-                        <input type="text" id="taskName" name="taskName" placeholder="Nazwa zadania" required>
-                        <input type="date" id="taskDate" name="taskDate" required>
-                        <input type="text" id="taskOwner" name="taskOwner" placeholder="Odpowiedzialny">
-                        <button type="submit">Dodaj zadanie</button>
-                    </form>
-                    <h3>Lista Zadań (chronologicznie)</h3>
-                    <ul id="taskList"></ul>
-                    <h3>Widok Kalendarza</h3>
-                    <div id="calendar-controls">
-                        <button type="button" onclick="previousMonth()">‹ Poprzedni</button>
-                        <h3 id="calendar-month-year"></h3>
-                        <button type="button" onclick="nextMonth()">Następny ›</button>
-                    </div>
-                    <div id="calendar-view"></div>
-                </section>
-            </div>
-
-            <!-- Strona 3: Goście -->
-            <div id="guests" class="page">
-                 <section id="guests-section">
-                    <h2>Zarządzanie Listą Gości</h2>
-                    <form class="guest-form ajax-form">
-                        <input type="hidden" name="action" value="add_guest">
-                        <input type="text" id="guest1Name" name="guest1Name" placeholder="Gość 1 (mężczyzna)">
-                        <input type="text" id="guest2Name" name="guest2Name" placeholder="Gość 2 (kobieta)">
-                        <p>Dodaj dzieci (imię i wiek):</p>
-                        <div id="children-inputs">
-                            <div>
-                                <input type="text" placeholder="Imię dziecka" name="addChildName[]">
-                                <input type="number" placeholder="Wiek" min="0" name="addChildAge[]">
-                            </div>
-                        </div>
-                        <button type="button" onclick="addChildInput('add')">+ Dodaj kolejne dziecko</button>
-                        <button type="submit">Dodaj Gości / Rodzinę</button>
-                    </form>
-                    <div class="guest-filters">
-                        <span>Filtruj:</span>
-                        <button type="button" class="filter-btn active" onclick="filterGuests('all')">Wszyscy</button>
-                        <button type="button" class="filter-btn" onclick="filterGuests('confirmed')">Potwierdzeni</button>
-                        <button type="button" class="filter-btn" onclick="filterGuests('unconfirmed')">Niepotwierdzeni</button>
-                    </div>
-                    <table id="guestTable">
-                        <thead><tr><th>Goście</th><th>Potwierdzona obecność</th><th>Nocleg (ile osób)</th><th>Akcje</th></tr></thead>
-                        <tbody></tbody>
-                        <tfoot></tfoot>
-                    </table>
-                </section>
-            </div>
-            
-            <!-- Strona 4: Budżet -->
-            <div id="budget" class="page">
-                 <section id="budget-section">
-                    <h2>Budżet i Koszty</h2>
-                    <form class="ajax-form">
-                        <input type="hidden" name="action" value="save_wedding_date">
-                        <div class="budget-setup">
-                            <h3>Cennik</h3>
-                            <div class="price-item">
-                                <label for="priceAdult">Cena za osobę dorosłą ("talerzyk"):</label>
-                                <input type="number" id="priceAdult" name="price_adult" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_adult'] ?? '0'); ?>" min="0" step="0.01">
-                            </div>
-                            <div class="price-item">
-                                <label for="priceChildOlder">Cena za dziecko 4-12 lat:</label>
-                                <input type="number" id="priceChildOlder" name="price_child_older" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_child_older'] ?? '0'); ?>" min="0" step="0.01">
-                            </div>
-                            <div class="price-item">
-                                <label for="priceChildYounger">Cena za dziecko 0-3 lat:</label>
-                                <input type="number" id="priceChildYounger" name="price_child_younger" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_child_younger'] ?? '0'); ?>" min="0" step="0.01">
-                            </div>
-                            <div class="price-item">
-                                <label for="priceAccommodation">Koszt noclegu za osobę/noc:</label>
-                                <input type="number" id="priceAccommodation" name="price_accommodation" oninput="updateBudget()" value="<?php echo htmlspecialchars($settings['price_accommodation'] ?? '0'); ?>" min="0" step="0.01">
-                            </div>
-                            <input type="hidden" name="wedding_date" id="hidden_wedding_date" value="<?php echo htmlspecialchars($settings['wedding_date'] ?? ''); ?>">
-                            <button type="submit" style="margin-top: 10px;">Zapisz Cennik</button>
-                        </div>
-                    </form>
-					<h3>Dodatkowe podpunkty cennika (liczone „na dorosłego”)</h3>
-<form class="ajax-form budget-item-form">
-  <input type="hidden" name="action" value="add_budget_item">
-  <input type="text" name="label" placeholder="Nazwa (np. Serwis, Korkowe)" required>
-  <input type="number" name="unit_price" placeholder="Cena za dorosłego (PLN)" min="0" step="0.01" required>
-  <button type="submit">Dodaj pozycję</button>
-</form>
-
-<ul id="budgetItemsList"></ul>
-
-                    
-                    <div class="vendor-costs">
-                        <h3>Koszty Usługodawców</h3>
-                        <form class="vendor-form ajax-form">
-                            <input type="hidden" name="action" value="add_vendor">
-                            <input type="text" id="vendorName" name="vendorName" placeholder="Usługa (np. DJ, Fotograf)" required>
-                            <input type="number" id="vendorCost" name="vendorCost" placeholder="Całkowity koszt" min="0" step="0.01" required>
-                            <input type="number" id="vendorDeposit" name="vendorDeposit" placeholder="Zapłacona zaliczka" min="0" step="0.01">
-                            <input type="date" id="vendorPaymentDate" name="vendorPaymentDate" title="Data płatności">
-                            <label class="checkbox-label"><input type="checkbox" id="vendorPaidFull" name="vendorPaidFull"> Opłacone w całości</label>
-                            <button type="submit">Dodaj Koszt</button>
-                        </form>
-                        <ul id="vendorList"></ul>
-                    </div>
-                    <div class="budget-summary">
-                        <h3>Podsumowanie Kosztów</h3>
-                        <p>Koszt "talerzyka" dla gości: <span id="guestMealCost">0.00</span> PLN</p>
-                        <p>Koszt noclegów dla gości: <span id="guestAccommCost">0.00</span> PLN</p>
-                        <p>Koszt usługodawców: <span id="vendorTotalCost">0.00</span> PLN</p><hr>
-                        <p><strong>Całkowity koszt wesela: <span id="totalWeddingCost">0.00</span> PLN</strong></p>
-                        <p><strong>Suma wpłat (zaliczki + opłacone): <span id="totalPaid">0.00</span> PLN</strong></p>
-                        <p><strong>Pozostało do zapłaty: <span id="totalRemaining">0.00</span> PLN</strong></p>
-						<p>Dodatkowe pozycje cennika (na dorosłych): <span id="extrasPerAdultCost">0.00</span> PLN</p>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Strona 5: Plan Stołów -->
-            <div id="seating" class="page">
-                <section id="seating-section">
-                    <h2>Graficzny Plan Stołów</h2>
-                    <form class="table-controls ajax-form">
-                        <input type="hidden" name="action" value="add_table">
-                        <input type="text" id="tableName" name="tableName" placeholder="Nazwa stołu (np. Stół Wiejski)">
-                        <input type="number" id="tableCapacity" name="tableCapacity" placeholder="Liczba miejsc" min="1" required>
-                        <select id="tableShape" name="tableShape">
-                            <option value="rect">Prostokątny</option>
-                            <option value="round">Okrągły</option>
-                        </select>
-                        <button type="submit">Dodaj Stół</button>
-                    </form>
-                    <div class="seating-area">
-                        <div id="unassigned-guests" class="guest-pool" ondragover="allowDrop(event)" ondrop="dropOnPool(event)"></div>
-                        <div id="tables-container"></div>
-                    </div>
-                </section>
-            </div>
-            
-            <!-- Strona 6: Eksport -->
-            <div id="export" class="page">
-                <section id="export-section">
-                    <h2>Raporty</h2>
-                    <p>Wygeneruj raporty z listą gości, budżetem i planem stołów do formatu PDF lub Excel.</p>
-                    <div class="export-buttons">
-                        <button type="button" onclick="exportToPDF()">Eksportuj do PDF</button>
-                        <button type="button" onclick="exportToExcel()">Eksportuj do Excel</button>
-                    </div>
-                </section>
-                
-                <section id="data-transfer-section">
-                    <h2>Przenoszenie Danych (Import/Eksport)</h2>
-                    <p>Zapisz wszystkie dane z organizera do jednego pliku, aby przenieść je na inny komputer, lub wczytaj dane z pliku.</p>
-                    <div class="export-buttons">
-                        <button type="button" onclick="exportDataToFile()">Eksportuj dane do pliku</button>
-                        <label class="import-label"><input type="file" id="importFileInput" onchange="importDataFromFile(event)" accept=".json"> Importuj dane z pliku</label>
-                    </div>
-                </section>
-            </div>
-        <?php else: ?>
-            <!-- Widok dla admina, który nie ma jeszcze swojego organizera -->
-            <div id="dashboard" class="page active">
-                <section>
-                    <h2>Witaj, Administratorze!</h2>
-                    <p>Nie masz przypisanego żadnego organizera. Przejdź do zakładki "Użytkownicy", aby utworzyć nowe konta i zapraszać ich do organizerów.</p>
-                </section>
-            </div>
-        <?php endif; ?>
-
-        <!-- Strona Użytkownicy - teraz z jednym, inteligentnym formularzem -->
-        <?php if ($is_admin || $permission_level === 'owner'): ?>
-        <div id="users" class="page <?php if (!$organizer_id) echo 'active'; ?>">
-            <section id="users-section">
-                <h2>Zarządzaj Użytkownikami</h2>
-                
-                <?php if ($organizer_id && ($is_admin || $permission_level === 'owner')): ?>
-                <div id="organizer-user-management">
-                    <h3>Dodaj lub zaproś użytkownika do tego organizera</h3>
-                    <form class="ajax-form" id="add-invite-user-form">
-                        <input type="hidden" name="action" value="add_or_invite_user">
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <input type="email" name="email" placeholder="Adres e-mail użytkownika" required style="flex-grow: 1;">
-                            <?php if ($is_admin): ?>
-                                <input type="password" name="password" placeholder="Hasło (jeśli nowy)" style="flex-grow: 1;">
-                            <?php endif; ?>
-                            <select name="permission_level">
-                                <option value="viewer">Tylko podgląd</option>
-                                <option value="editor">Możliwość edycji</option>
-                                <?php if ($is_admin): ?>
-                                <option value="owner">Właściciel</option>
-                                <?php endif; ?>
-                            </select>
-                            <button type="submit">Dodaj / Zaproś</button>
-                        </div>
-                        <?php if ($is_admin): ?>
-                            <small style="display: block; margin-top: 5px;">Jeśli użytkownik nie istnieje, zostanie utworzony z podanym hasłem. Jeśli istnieje, hasło zostanie zignorowane.</small>
-                        <?php else: ?>
-                             <small style="display: block; margin-top: 5px;">Użytkownik musi już posiadać konto w systemie, aby można go było zaprosić.</small>
-                        <?php endif; ?>
-                    </form>
-                    <h3 style="margin-top: 30px;">Użytkownicy z dostępem do tego organizera</h3>
-                    <ul id="userList" style="list-style: none; margin-top: 10px;"></ul>
-                </div>
-                <?php elseif ($is_admin): ?>
-                    <p>Nie masz przypisanego żadnego organizera. Nie możesz zarządzać dostępem, dopóki ktoś nie zaprosi Cię do współpracy lub nie utworzysz własnego organizera (funkcja do dodania w przyszłości).</p>
-                <?php endif; ?>
-            </section>
-        </div>
-        <?php endif; ?>
-    </main>
-
-    <!-- SEKCJA ŁADOWANIA SKRYPTÓW -->
-    <script src="lib/jspdf.umd.min.js" defer></script>
-    <script src="lib/jspdf.plugin.autotable.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
-    <script src="js/script.js" defer></script>
-</body>
-</html>
->>>>>>> Stashed changes
